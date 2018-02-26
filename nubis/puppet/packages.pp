@@ -17,7 +17,7 @@ package { 'vsql':
 # Tableau
 package { 'tableau':
   ensure          => present,
-  provider        => 'rpm',
+  provider        => 'yum',
   name            => 'tableau-server',
   source          => "https://downloads.tableau.com/tssoftware/tableau-server-${tableau_version}.${::architecture}.rpm",
 }
