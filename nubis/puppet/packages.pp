@@ -42,10 +42,10 @@ package { [
   ],
 }
 -> package { 'tableau-installer':
-  ensure          => present,
-  provider        => 'rpm',
-  name            => 'tableau-server-automated-installer',
-  source          => "https://raw.githubusercontent.com/tableau/server-install-script-samples/master/linux/automated-installer/packages/tableau-server-automated-installer-${$tableau_installer_version}.noarch.rpm",
+  ensure   => present,
+  provider => 'rpm',
+  name     => 'tableau-server-automated-installer',
+  source   => "https://raw.githubusercontent.com/tableau/server-install-script-samples/master/linux/automated-installer/packages/tableau-server-automated-installer-${$tableau_installer_version}.noarch.rpm",
 }
 
 
