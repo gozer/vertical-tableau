@@ -1,5 +1,5 @@
 module "worker" {
-  source            = "github.com/nubisproject/nubis-terraform//worker?ref=v2.0.1"
+  source            = "github.com/gozer/nubis-terraform//worker?ref=issue%2F160%2Faz"
   region            = "${var.region}"
   environment       = "${var.environment}"
   account           = "${var.account}"
@@ -12,9 +12,8 @@ module "worker" {
   nubis_sudo_groups = "${var.nubis_sudo_groups}"
   nubis_user_groups = "${var.nubis_user_groups}"
 
-#  Disable for now
-#  security_group        = "${data.consul_keys.vertical.var.client_security_group_id}"
-#  security_group_custom = true
+  security_group        = "${data.consul_keys.vertical.var.client_security_group_id},${aws_security_group.tableau.id}"
+  security_group_custom = true
 
   instance_type = "c4.xlarge"
 
@@ -24,11 +23,11 @@ module "worker" {
 }
 
 module "load_balancer" {
-  source              = "github.com/nubisproject/nubis-terraform//load_balancer?ref=v2.1.0"
-  region              = "${var.region}"
-  environment         = "${var.environment}"
-  account             = "${var.account}"
-  service_name        = "${var.service_name}"
+  source       = "github.com/nubisproject/nubis-terraform//load_balancer?ref=v2.1.0"
+  region       = "${var.region}"
+  environment  = "${var.environment}"
+  account      = "${var.account}"
+  service_name = "${var.service_name}"
 }
 
 module "dns" {
@@ -38,4 +37,55 @@ module "dns" {
   account      = "${var.account}"
   service_name = "${var.service_name}"
   target       = "${module.load_balancer.address}"
+}
+
+provider "aws" {
+  region = "${var.region}"
+}
+
+module "info" {
+  source      = "github.com/nubisproject/nubis-terraform//info?ref=v2.1.0"
+  region      = "${var.region}"
+  environment = "${var.environment}"
+  account     = "${var.account}"
+}
+
+resource "aws_security_group" "tableau" {
+  name_prefix = "${var.service_name}-${var.arena}-${var.environment}-"
+
+  vpc_id = "${module.info.vpc_id}"
+
+  tags = {
+    Name        = "${var.service_name}-${var.arena}-${var.environment}"
+    Arena       = "${var.arena}"
+    Region      = "${var.region}"
+    Environment = "${var.environment}"
+  }
+
+  ingress {
+    from_port = 80
+    to_port   = 80
+    protocol  = "tcp"
+
+    security_groups = [
+      "${module.load_balancer.source_security_group_id}",
+    ]
+  }
+
+  ingress {
+    from_port = 443
+    to_port   = 443
+    protocol  = "tcp"
+
+    security_groups = [
+      "${module.load_balancer.source_security_group_id}",
+    ]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
