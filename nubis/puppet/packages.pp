@@ -14,9 +14,31 @@ package { 'vsql':
   ],
 }
 
-# Tableau
-package { 'tableau':
-  ensure          => present,
-  provider        => 'yum',
-  name            => "https://downloads.tableau.com/tssoftware/tableau-server-${tableau_version}.${::architecture}.rpm",
+# Tableau and dependencies
+package { [
+  'fontconfig',
+  'fuse',
+  'net-tools',
+  'bash-completion',
+  'freeglut',
+  'freetype',
+  'fuse-libs',
+  'krb5-libs',
+  'libXcomposite',
+  'libXrender',
+  'libxslt',
+  'mesa-libEGL',
+]:
+  ensure => present,
 }
+-> package { 'tableau':
+  ensure          => present,
+  provider        => 'rpm',
+  name            => 'tableau-server',
+  source          => "https://downloads.tableau.com/tssoftware/tableau-server-${tableau_version}.${::architecture}.rpm",
+  install_options => [
+    '--noscripts',
+  ],
+}
+
+
