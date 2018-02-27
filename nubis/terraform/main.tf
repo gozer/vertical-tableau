@@ -28,7 +28,6 @@ module "load_balancer" {
   environment         = "${var.environment}"
   account             = "${var.account}"
   service_name        = "${var.service_name}"
-  health_check_target = "TCP:80"
 }
 
 module "dns" {
