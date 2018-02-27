@@ -18,6 +18,8 @@ module "worker" {
   instance_type = "c4.xlarge"
 
   health_check_type = "EC2"
+
+  root_storage_size = "256"
 }
 
 module "load_balancer" {
