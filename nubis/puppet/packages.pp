@@ -37,7 +37,7 @@ package { [
   name            => 'tableau-server',
   source          => "https://downloads.tableau.com/tssoftware/tableau-server-${tableau_version}.${::architecture}.rpm",
   install_options => [
-    '--noscripts',
+    '--nopre',
   ],
 }
 
