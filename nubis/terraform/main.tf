@@ -14,5 +14,5 @@ module "worker" {
   security_group    = "${data.consul_keys.vertical.var.client_security_group_id}"
   security_group_custom = true
 
-  instance_type     = "c5.xlarge"
+  instance_type     = "c4.xlarge"
 }
