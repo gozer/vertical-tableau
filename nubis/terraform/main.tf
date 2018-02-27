@@ -12,8 +12,9 @@ module "worker" {
   nubis_sudo_groups = "${var.nubis_sudo_groups}"
   nubis_user_groups = "${var.nubis_user_groups}"
 
-  security_group        = "${data.consul_keys.vertical.var.client_security_group_id}"
-  security_group_custom = true
+#  Disable for now
+#  security_group        = "${data.consul_keys.vertical.var.client_security_group_id}"
+#  security_group_custom = true
 
   instance_type = "c4.xlarge"
 
