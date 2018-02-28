@@ -47,5 +47,16 @@ package { [
   name     => 'tableau-server-automated-installer',
   source   => "https://raw.githubusercontent.com/tableau/server-install-script-samples/master/linux/automated-installer/packages/tableau-server-automated-installer-${$tableau_installer_version}.noarch.rpm",
 }
+-> package { 'tableau-postgresql-odbc':
+  ensure   => present,
+  provider => 'rpm',
+  name     => 'tableau-postgresql-odbc',
+  source   => "https://downloads.tableau.com/drivers/linux/yum/tableau-driver/tableau-postgresql-odbc-9.5.3-1.x86_64.rpm",
+}
 
-
+package { 'unixODBC':
+  ensure => present,
+}
+package { 'mysql-connector-odbc':
+  ensure => present,
+}
