@@ -17,6 +17,7 @@ package { 'vsql':
 
 staging::file { "tableau-server-${tableau_version}.${::architecture}.rpm":
   source => "https://downloads.tableau.com/tssoftware/tableau-server-${tableau_version}.${::architecture}.rpm",
+  timeout => 0,
 }->
 exec { 'rename RPM':
   command => "cp /opt/staging/tableau-server-${tableau_version}.${::architecture}.rpm /opt/$(rpm -q -p --queryformat '%{Name}' /opt/staging/tableau-server-${tableau_version}.${::architecture}.rpm).rpm",
