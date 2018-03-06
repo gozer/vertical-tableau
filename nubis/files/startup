@@ -31,4 +31,4 @@ tableau_server_admin_user="nubis"
 tableau_server_admin_pass="foobar123"
 EOF
 
-$INSTALLER --debug -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula 
+$INSTALLER --debug -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula /opt/tableau-server-*.rpm
