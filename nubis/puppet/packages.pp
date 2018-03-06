@@ -15,6 +15,14 @@ package { 'vsql':
   ],
 }
 
+staging::file { "tableau-server-${tableau_version}.${::architecture}.rpm":
+  source => "https://downloads.tableau.com/tssoftware/tableau-server-${tableau_version}.${::architecture}.rpm",
+}->
+exec { 'rename RPM':
+  command => "cp /opt/staging/tableau-server-${tableau_version}.${::architecture}.rpm /opt/$(rpm -q -p --queryformat '%{Name}' /opt/staging/tableau-server-${tableau_version}.${::architecture}.rpm).rpm",
+  path => ['/bin','/sbin','/usr/bin','/usr/sbin','/usr/local/bin','/usr/local/sbin'],
+}
+
 # Tableau and dependencies
 package { [
   'fontconfig',
@@ -36,7 +44,10 @@ package { [
   ensure          => present,
   provider        => 'rpm',
   name            => 'tableau-server',
-  source          => "https://downloads.tableau.com/tssoftware/tableau-server-${tableau_version}.${::architecture}.rpm",
+  source          => "/opt/staging/tableau-server-${tableau_version}.${::architecture}.rpm",
+  require         => [
+    Staging::File["tableau-server-${tableau_version}.${::architecture}.rpm"],
+  ],
   install_options => [
     '--nopre',
   ],
