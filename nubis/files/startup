@@ -1,5 +1,6 @@
 #!/bin/bash
 
+USERNAME=tableau
 INSTALLER=/opt/tableau/tableau_server_automated_installer/automated-installer*/automated-installer
 
 #XXX Secrets needs to be generated
@@ -17,7 +18,7 @@ cat <<EOF > /etc/tableau/secrets
 # created during the Tableau installation process. Members of the 'tsmadmin'
 # group can run TSM commands.
 #
-tsm_admin_user="tableau"
+tsm_admin_user="$USERNAME"
 tsm_admin_pass="foobar123"
 
 # Enter a username and password to create the initial Tableau administrator
@@ -31,4 +32,6 @@ tableau_server_admin_user="nubis"
 tableau_server_admin_pass="foobar123"
 EOF
 
-cd /opt && USER=tableau SUDO_USER=tableau $INSTALLER --debug -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula tableau-server-*.rpm
+useradd -r $USERNAME -g tableau -s /sbin/nologin --no-create-home --home-dir /
+
+cd /opt && USER=$USERNAME SUDO_USER=$USERNAME $INSTALLER --debug -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula tableau-server-*.rpm
