@@ -41,18 +41,6 @@ package { [
 ]:
   ensure => present,
 }
--> package { 'tableau':
-  ensure          => present,
-  provider        => 'rpm',
-  name            => 'tableau-server',
-  source          => "/opt/staging/tableau-server-${tableau_version}.${::architecture}.rpm",
-  require         => [
-    Staging::File["tableau-server-${tableau_version}.${::architecture}.rpm"],
-  ],
-  install_options => [
-    '--nopre',
-  ],
-}
 -> package { 'tableau-installer':
   ensure   => present,
   provider => 'rpm',
