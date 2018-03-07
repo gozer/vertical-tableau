@@ -34,7 +34,7 @@ tableau_server_admin_user="nubis"
 tableau_server_admin_pass="foobar123"
 EOF
 
-useradd --system $USERNAME
+useradd -m -r $USERNAME
 echo "foobar123" | passwd $USERNAME --stdin
 
 cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER --debug -a $USERNAME -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula tableau-server-*.rpm
