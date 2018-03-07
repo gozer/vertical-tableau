@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 USERNAME=tableauops
 INSTALLER=/opt/tableau/tableau_server_automated_installer/automated-installer*/automated-installer
 
@@ -32,6 +34,7 @@ tableau_server_admin_user="nubis"
 tableau_server_admin_pass="foobar123"
 EOF
 
-useradd $USERNAME
+useradd --system $USERNAME
+echo "foobar123" | passwd $USERNAME --stdin
 
-cd /opt && USER=root SUDO_USER=root $INSTALLER --debug -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula tableau-server-*.rpm
+cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER --debug -a $USERNAME -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula tableau-server-*.rpm
