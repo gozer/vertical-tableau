@@ -3,6 +3,7 @@
 set -x
 
 USERNAME=tableauops
+PASSWORD=foobar123
 INSTALLER=/opt/tableau/tableau_server_automated_installer/automated-installer*/automated-installer
 
 #XXX Secrets needs to be generated
@@ -21,7 +22,7 @@ cat <<EOF > /etc/tableau/secrets
 # group can run TSM commands.
 #
 tsm_admin_user="$USERNAME"
-tsm_admin_pass="foobar123"
+tsm_admin_pass="$PASSWORD"
 
 # Enter a username and password to create the initial Tableau administrator
 # account. This account will be created in Tableau Server by the installation
@@ -35,6 +36,15 @@ tableau_server_admin_pass="foobar123"
 EOF
 
 useradd -m -r $USERNAME
-echo "foobar123" | passwd $USERNAME --stdin
+echo "$PASSWORD" | passwd $USERNAME --stdin
 
-cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER --debug -a $USERNAME -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula tableau-server-*.rpm
+
+NUBIS_PROJECT=$(nubis-metadata NUBIS_PROJECT)
+NUBIS_ENVIRONMENT=$(nubis-metadata NUBIS_ENVIRONMENT)
+LICENSE=$(consulate kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/License")
+
+if [ -n "$LICENSE" ]; then
+  LICENSE_ARGS="-k $LICENSE"
+fi
+
+cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER --debug -a $USERNAME $LICENSE_ARGS -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula tableau-server-*.rpm
