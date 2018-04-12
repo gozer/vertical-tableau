@@ -1,10 +1,15 @@
-module "worker" {
+locals {
+  instance_type     = "m4.xlarge"
+  root_storage_size = "256"
+}
+
+module "coordinator" {
   source            = "github.com/gozer/nubis-terraform//worker?ref=issue%2F160%2Faz"
   region            = "${var.region}"
   environment       = "${var.environment}"
   account           = "${var.account}"
   service_name      = "${var.service_name}"
-  purpose           = "webserver"
+  purpose           = "${var.service_name}-coordinator"
   ami               = "${var.ami}"
   elb               = "${module.load_balancer.name}"
   ssh_key_file      = "${var.ssh_key_file}"
@@ -15,11 +20,41 @@ module "worker" {
   security_group        = "${data.consul_keys.vertical.var.client_security_group_id},${aws_security_group.tableau.id}"
   security_group_custom = true
 
-  instance_type = "m4.2xlarge"
-
   health_check_type = "EC2"
 
-  root_storage_size = "256"
+  tags = ["${list(
+    map("key", "Tableau", "value", "Coordinator", "propagate_at_launch", true),
+  )}"]
+
+  instance_type     = "${local.instance_type}"
+  root_storage_size = "${local.root_storage_size}"
+}
+
+module "worker" {
+  source            = "github.com/gozer/nubis-terraform//worker?ref=issue%2F160%2Faz"
+  region            = "${var.region}"
+  environment       = "${var.environment}"
+  account           = "${var.account}"
+  service_name      = "${var.service_name}"
+  purpose           = "${var.service_name}-worker"
+  ami               = "${var.ami}"
+  ssh_key_file      = "${var.ssh_key_file}"
+  ssh_key_name      = "${var.ssh_key_name}"
+  nubis_sudo_groups = "${var.nubis_sudo_groups}"
+  nubis_user_groups = "${var.nubis_user_groups}"
+
+  security_group        = "${data.consul_keys.vertical.var.client_security_group_id},${aws_security_group.tableau.id}"
+  security_group_custom = true
+
+  health_check_type = "EC2"
+  min_instances     = 2
+
+  tags = ["${list(
+    map("key", "Tableau", "value", "Worker", "propagate_at_launch", true),
+  )}"]
+
+  instance_type     = "${local.instance_type}"
+  root_storage_size = "${local.root_storage_size}"
 }
 
 module "load_balancer" {

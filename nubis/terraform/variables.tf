@@ -13,7 +13,7 @@ variable "environment" {
 }
 
 variable "service_name" {
-  default = "vertical"
+  default = "tableau"
 }
 
 variable "ami" {}
