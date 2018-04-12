@@ -15,7 +15,7 @@ module "worker" {
   security_group        = "${data.consul_keys.vertical.var.client_security_group_id},${aws_security_group.tableau.id}"
   security_group_custom = true
 
-  instance_type = "c4.xlarge"
+  instance_type = "m4.2xlarge"
 
   health_check_type = "EC2"
 
