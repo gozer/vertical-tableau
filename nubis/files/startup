@@ -41,7 +41,7 @@ echo "$PASSWORD" | passwd $USERNAME --stdin
 
 NUBIS_PROJECT=$(nubis-metadata NUBIS_PROJECT)
 NUBIS_ENVIRONMENT=$(nubis-metadata NUBIS_ENVIRONMENT)
-LICENSE=$(consulate kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/License")
+LICENSE=$(consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/License" 2>/dev/null)
 
 if [ -n "$LICENSE" ]; then
   LICENSE_ARGS="-k $LICENSE"
