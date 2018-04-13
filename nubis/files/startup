@@ -2,6 +2,8 @@
 
 set -x
 
+export PATH=/usr/local/bin:$PATH
+
 USERNAME=tableauops
 PASSWORD=foobar123
 INSTALLER=/opt/tableau/tableau_server_automated_installer/automated-installer*/automated-installer
@@ -50,12 +52,27 @@ fi
 
 if [ "worker" == "$NUBIS_PURPOSE" ]; then
   echo "Worker Bee, joining with Coordinator"
-  consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Bootstrap" 2>/dev/null | jq . | tee /etc/tableau/bootstrap.json
-  BOOTSTRAP_ARGS="-b /etc/tableau/bootstrap.json"
   
+  #XXX: Probably worth waiting here...
+  consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Bootstrap" 2>/dev/null | jq . | tee /etc/tableau/bootstrap.json
+  
+  if [ -s /etc/tableau/bootstrap.json ]; then
+    BOOTSTRAP_ARGS="-b /etc/tableau/bootstrap.json"
+  fi
+
   echo "XXX: Baling out early!"
   #XXX 
   exit
 fi
 
 cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER -a $USERNAME $LICENSE_ARGS $BOOTSTRAP_ARGS -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula tableau-server-*.rpm
+
+#XXX: Do we need to wait for startup to complete here ?
+if [ "coordinator" == "$NUBIS_PURPOSE" ]; then
+  # establish admin session
+  tsm login --username $USERNAME --password $PASSWORD
+
+  echo "recording bootstrap configuration"
+  tsm topology nodes get-bootstrap-file --file /etc/tableau/bootstrap.json
+  consul kv put "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Bootstrap" @/etc/tableau/bootstrap.json
+fi
