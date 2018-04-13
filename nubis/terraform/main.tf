@@ -22,10 +22,6 @@ module "coordinator" {
 
   health_check_type = "EC2"
 
-  tags = ["${list(
-    map("key", "Tableau", "value", "Coordinator", "propagate_at_launch", true),
-  )}"]
-
   instance_type     = "${local.instance_type}"
   root_storage_size = "${local.root_storage_size}"
 }
@@ -48,10 +44,6 @@ module "worker" {
 
   health_check_type = "EC2"
   min_instances     = 2
-
-  tags = ["${list(
-    map("key", "Tableau", "value", "Worker", "propagate_at_launch", true),
-  )}"]
 
   instance_type     = "${local.instance_type}"
   root_storage_size = "${local.root_storage_size}"
@@ -101,6 +93,7 @@ resource "aws_security_group" "tableau" {
     from_port = 80
     to_port   = 80
     protocol  = "tcp"
+    self      = true
 
     security_groups = [
       "${module.load_balancer.source_security_group_id}",
@@ -111,10 +104,27 @@ resource "aws_security_group" "tableau" {
     from_port = 443
     to_port   = 443
     protocol  = "tcp"
+    self      = true
 
     security_groups = [
       "${module.load_balancer.source_security_group_id}",
     ]
+  }
+
+  # Dynamic port range, yeah tableau
+  ingress {
+    self      = true
+    from_port = 8000
+    to_port   = 9000
+    protocol  = "tcp"
+  }
+
+  # Licensing component ?!?!
+  ingress {
+    self      = true
+    from_port = 27000
+    to_port   = 27010
+    protocol  = "tcp"
   }
 
   egress {
