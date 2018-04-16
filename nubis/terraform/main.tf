@@ -34,6 +34,7 @@ module "worker" {
   service_name      = "${var.service_name}"
   purpose           = "worker"
   ami               = "${var.ami}"
+  elb               = "${module.load_balancer.name}"
   ssh_key_file      = "${var.ssh_key_file}"
   ssh_key_name      = "${var.ssh_key_name}"
   nubis_sudo_groups = "${var.nubis_sudo_groups}"
