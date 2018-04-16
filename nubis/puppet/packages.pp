@@ -103,3 +103,6 @@ package { 'mysql-connector-odbc':
 package { 'pwgen':
   ensure => present,
 }
+package { 'moreutils':
+  ensure => present,
+}
