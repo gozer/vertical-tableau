@@ -100,3 +100,6 @@ package { 'unixODBC':
 package { 'mysql-connector-odbc':
   ensure => present,
 }
+package { 'pwgen':
+  ensure => present,
+}
