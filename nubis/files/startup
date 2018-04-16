@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Shove all logs to a log file as well
+exec &> >(tee >( ts > /var/log/tableau-startup.log)) 2>&1
+
 set -x
 
 export PATH=/usr/local/bin:$PATH
@@ -7,6 +10,7 @@ export PATH=/usr/local/bin:$PATH
 USERNAME=tableauops
 PASSWORD=foobar123
 INSTALLER=/opt/tableau/tableau_server_automated_installer/automated-installer*/automated-installer
+TSM=/opt/tableau/tableau_server/packages/customer-bin.*/tsm
 
 #XXX Secrets needs to be generated
 cat <<EOF > /etc/tableau/secrets
@@ -70,9 +74,9 @@ cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER -a $USERNAME $LI
 #XXX: Do we need to wait for startup to complete here ?
 if [ "coordinator" == "$NUBIS_PURPOSE" ]; then
   # establish admin session
-  tsm login --username $USERNAME --password $PASSWORD
+  $TSM login --username $USERNAME --password $PASSWORD
 
   echo "recording bootstrap configuration"
-  tsm topology nodes get-bootstrap-file --file /etc/tableau/bootstrap.json
+  $TSM topology nodes get-bootstrap-file --file /etc/tableau/bootstrap.json
   consul kv put "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Bootstrap" @/etc/tableau/bootstrap.json
 fi
