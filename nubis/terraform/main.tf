@@ -4,7 +4,7 @@ locals {
 }
 
 module "coordinator" {
-  source            = "github.com/gozer/nubis-terraform//worker?ref=issue%2F160%2Faz"
+  source            = "github.com/gozer/nubis-terraform//worker?ref=v2.2.0"
   region            = "${var.region}"
   environment       = "${var.environment}"
   account           = "${var.account}"
@@ -27,7 +27,7 @@ module "coordinator" {
 }
 
 module "worker" {
-  source            = "github.com/gozer/nubis-terraform//worker?ref=issue%2F160%2Faz"
+  source            = "github.com/gozer/nubis-terraform//worker?ref=v2.2.0"
   region            = "${var.region}"
   environment       = "${var.environment}"
   account           = "${var.account}"
@@ -51,7 +51,7 @@ module "worker" {
 }
 
 module "load_balancer" {
-  source       = "github.com/nubisproject/nubis-terraform//load_balancer?ref=v2.1.0"
+  source       = "github.com/nubisproject/nubis-terraform//load_balancer?ref=v2.2.0"
   region       = "${var.region}"
   environment  = "${var.environment}"
   account      = "${var.account}"
@@ -59,7 +59,7 @@ module "load_balancer" {
 }
 
 module "dns" {
-  source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.1.0"
+  source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.2.0"
   region       = "${var.region}"
   environment  = "${var.environment}"
   account      = "${var.account}"
@@ -72,7 +72,7 @@ provider "aws" {
 }
 
 module "info" {
-  source      = "github.com/nubisproject/nubis-terraform//info?ref=v2.1.0"
+  source      = "github.com/nubisproject/nubis-terraform//info?ref=v2.2.0"
   region      = "${var.region}"
   environment = "${var.environment}"
   account     = "${var.account}"
