@@ -1,3 +1,7 @@
+class { 'fluentd':
+  service_ensure => stopped
+}
+
 fluentd::configfile { $project_name: }
 
 fluentd::source { 'tabsvc':
