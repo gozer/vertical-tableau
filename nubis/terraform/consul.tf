@@ -32,7 +32,7 @@ data "consul_keys" "vertical" {
 }
 
 # Publish our outputs into Consul for our application to consume
-data "consul_keys" "config" {
+resource "consul_keys" "config" {
   key {
     path   = "${module.consul.config_prefix}/S3/Bucket/Backups"
     value  = "${module.backups.name}"
