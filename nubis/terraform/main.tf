@@ -67,6 +67,17 @@ module "dns" {
   target       = "${module.load_balancer.address}"
 }
 
+module "backups" {
+  source       = "github.com/nubisproject/nubis-terraform//bucket?ref=v2.2.0"
+  region       = "${var.region}"
+  environment  = "${var.environment}"
+  account      = "${var.account}"
+  service_name = "${var.service_name}"
+  purpose      = "backups"
+  role_cnt     = "2"
+  role         = "${module.coordinator.role},${module.worker.role}"
+}
+
 provider "aws" {
   region = "${var.region}"
 }
