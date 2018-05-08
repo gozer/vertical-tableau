@@ -64,9 +64,6 @@ if [ "worker" == "$NUBIS_PURPOSE" ]; then
     BOOTSTRAP_ARGS="-b /etc/tableau/bootstrap.json"
   fi
 
-  echo "XXX: Baling out early!"
-  #XXX 
-  exit
 fi
 
 cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER -a $USERNAME $LICENSE_ARGS $BOOTSTRAP_ARGS -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula tableau-server-*.rpm
