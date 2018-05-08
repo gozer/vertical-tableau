@@ -48,6 +48,10 @@ module "worker" {
 
   instance_type     = "${local.instance_type}"
   root_storage_size = "${local.root_storage_size}"
+
+  tags = ["${list(
+    map("key", "DependsOn", "value", "${module.coordinator.autoscaling_group}", "propagate_at_launch", false),
+  )}"]
 }
 
 module "load_balancer" {
