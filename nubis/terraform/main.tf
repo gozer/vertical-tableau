@@ -78,6 +78,14 @@ module "backups" {
   role         = "${module.coordinator.role},${module.worker.role}"
 }
 
+module "mail" {
+  source       = "github.com/nubisproject/nubis-terraform//mail?ref=v2.2.0"
+  region       = "${var.region}"
+  environment  = "${var.environment}"
+  account      = "${var.account}"
+  service_name = "${var.service_name}"
+}
+
 provider "aws" {
   region = "${var.region}"
 }

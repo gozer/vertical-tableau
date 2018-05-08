@@ -1,0 +1,18 @@
+{
+ "configKeys": {
+    "gateway.external_url": "https://{{ getv "/config/PublicHostname" }}/",
+    "vizportal.openid.config_url": "{{ getv "/config/OpenID/ConfigurationURL" }}",
+    "gateway.public.host": "{{ getv "/config/PublicHostname" }}",
+    "vizportal.openid.client_id": "{{ getv "/config/OpenID/ClientID" }}",
+    "vizportal.openid.client_secret": "{{ getv "/config/OpenID/ClientSecret" }}",
+    "vizportal.openid.enabled": true,
+    "svcmonitor.notification.smtp.server": "SMTP server url",
+    "svcmonitor.notification.smtp.send_account": "SMTP user name",
+    "svcmonitor.notification.smtp.port": 25,
+    "svcmonitor.notification.smtp.password": "SMTP server password",
+    "svcmonitor.notification.smtp.ssl_enabled": true,
+    "svcmonitor.notification.smtp.from_address": "tableau@mozilla.com",
+    "svcmonitor.notification.smtp.target_addresses": "gozer@mozilla.com",
+    "svcmonitor.notification.smtp.canonical_url": "https://{{ getv "/config/PublicHostname" }}/"
+ }
+}

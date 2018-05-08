@@ -15,6 +15,15 @@ package { 'vsql':
   ],
 }
 
+# Fix missing error XML file
+file { '/opt/vertica/lib64/en-US':
+  ensure  => 'link',
+  target  => '../en-US',
+  require => [
+    Package['vsql'],
+  ],
+}
+
 file { '/etc/vertica-odbc.tmpl':
   ensure  => file,
   owner   => 'root',

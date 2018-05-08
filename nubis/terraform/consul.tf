@@ -38,4 +38,10 @@ resource "consul_keys" "config" {
     value  = "${module.backups.name}"
     delete = true
   }
+
+  key {
+    path   = "${module.consul.config_prefix}/PublicHostname"
+    value  = "${module.dns.fqdn}"
+    delete = true
+  }
 }

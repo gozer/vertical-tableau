@@ -1,0 +1,14 @@
+[template]
+src = "settings.json.tmpl"
+dest = "/etc/tableau/settings.json"
+prefix = "/%%PROJECT%%-%%ENVIRONMENT%%/%%ENVIRONMENT%%"
+
+uid = 0
+gid = 0
+mode = "0644"
+
+keys = [
+    "/config/*",
+    "/config"
+]
+
