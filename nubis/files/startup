@@ -9,8 +9,8 @@ export PATH=/usr/local/bin:$PATH
 
 USERNAME=tableauops
 PASSWORD=foobar123
-INSTALLER=/opt/tableau/tableau_server_automated_installer/automated-installer*/automated-installer
-TSM=/opt/tableau/tableau_server/packages/customer-bin.*/tsm
+INSTALLER=$(ls /opt/tableau/tableau_server_automated_installer/automated-installer*/automated-installer)
+TSM=$(ls /opt/tableau/tableau_server/packages/customer-bin.*/tsm)
 
 #XXX Secrets needs to be generated
 cat <<EOF > /etc/tableau/secrets
@@ -48,11 +48,7 @@ NUBIS_PROJECT=$(nubis-metadata NUBIS_PROJECT)
 NUBIS_ENVIRONMENT=$(nubis-metadata NUBIS_ENVIRONMENT)
 NUBIS_PURPOSE=$(nubis-metadata NUBIS_PURPOSE)
 
-LICENSE=$(consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/License" 2>/dev/null)
-
-if [ -n "$LICENSE" ]; then
-  LICENSE_ARGS="-k $LICENSE"
-fi
+declare -a BOOTSTRAP_ARGS LICENSE_ARGS COORDINATOR_ARGS
 
 if [ "worker" == "$NUBIS_PURPOSE" ]; then
   echo "Worker Bee, joining with Coordinator"
@@ -61,12 +57,23 @@ if [ "worker" == "$NUBIS_PURPOSE" ]; then
   consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Bootstrap" 2>/dev/null | jq . | tee /etc/tableau/bootstrap.json
   
   if [ -s /etc/tableau/bootstrap.json ]; then
-    BOOTSTRAP_ARGS="-b /etc/tableau/bootstrap.json"
+    BOOTSTRAP_ARGS=(-b /etc/tableau/bootstrap.json)
   fi
 
+  #XXX: Bailing out
+  exit
+
+elif [ "coordinator" == "$NUBIS_PURPOSE" ]; then
+  LICENSE=$(consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/License" 2>/dev/null)
+  if [ -n "$LICENSE" ]; then
+    LICENSE_ARGS=(-k "$LICENSE")
+  fi
+  COORDINATOR_ARGS=(-s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json)
 fi
 
-cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER -a $USERNAME $LICENSE_ARGS $BOOTSTRAP_ARGS -s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json --accepteula tableau-server-*.rpm
+set -x
+
+cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER -a $USERNAME "${LICENSE_ARGS[@]}" "${BOOTSTRAP_ARGS[@]}" "${COORDINATOR_ARGS[@]}" --accepteula tableau-server-*.rpm
 
 #XXX: Do we need to wait for startup to complete here ?
 if [ "coordinator" == "$NUBIS_PURPOSE" ]; then
