@@ -56,7 +56,7 @@ module "worker" {
 }
 
 module "load_balancer" {
-  source       = "github.com/nubisprojfect/nubis-terraform//load_balancer?ref=v2.2.0"
+  source       = "github.com/nubisproject/nubis-terraform//load_balancer?ref=v2.2.0"
   region       = "${var.region}"
   environment  = "${var.environment}"
   account      = "${var.account}"
