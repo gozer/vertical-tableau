@@ -1,6 +1,7 @@
 locals {
-  instance_type     = "m4.xlarge"
+  instance_type     = "${var.environment == "prod" ? "r4.8xlarge" : "m4.xlarge"}"
   root_storage_size = "256"
+  worker_count      = "${var.environment == "prod" ? 0 : 2}"
 }
 
 module "coordinator" {
@@ -44,7 +45,7 @@ module "worker" {
   security_group_custom = true
 
   health_check_type = "EC2"
-  min_instances     = 2
+  min_instances     = "${local.worker_count}"
 
   instance_type     = "${local.instance_type}"
   root_storage_size = "${local.root_storage_size}"
@@ -55,7 +56,7 @@ module "worker" {
 }
 
 module "load_balancer" {
-  source       = "github.com/nubisproject/nubis-terraform//load_balancer?ref=v2.2.0"
+  source       = "github.com/nubisprojfect/nubis-terraform//load_balancer?ref=v2.2.0"
   region       = "${var.region}"
   environment  = "${var.environment}"
   account      = "${var.account}"
