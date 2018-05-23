@@ -9,8 +9,6 @@ export PATH=/usr/local/bin:$PATH
 
 USERNAME=tableauops
 PASSWORD=foobar123
-INSTALLER=$(ls /opt/tableau/tableau_server_automated_installer/automated-installer*/automated-installer)
-TSM=$(ls /opt/tableau/tableau_server/packages/customer-bin.*/tsm)
 
 #XXX Secrets needs to be generated
 cat <<EOF > /etc/tableau/secrets
@@ -48,7 +46,11 @@ NUBIS_PROJECT=$(nubis-metadata NUBIS_PROJECT)
 NUBIS_ENVIRONMENT=$(nubis-metadata NUBIS_ENVIRONMENT)
 NUBIS_PURPOSE=$(nubis-metadata NUBIS_PURPOSE)
 
-declare -a BOOTSTRAP_ARGS LICENSE_ARGS COORDINATOR_ARGS
+declare -a BOOTSTRAP_ARGS LICENSE_ARGS INSTALLER_ARGS
+
+INSTALLER=$(ls /opt/tableau/tableau_server_automated_installer/automated-installer*/automated-installer)
+
+INSTALLER_ARGS=(-s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json)
 
 if [ "worker" == "$NUBIS_PURPOSE" ]; then
   echo "Worker Bee, joining with Coordinator"
@@ -68,15 +70,28 @@ elif [ "coordinator" == "$NUBIS_PURPOSE" ]; then
   if [ -n "$LICENSE" ]; then
     LICENSE_ARGS=(-k "$LICENSE")
   fi
-  COORDINATOR_ARGS=(-s /etc/tableau/secrets -f /etc/tableau/config.json -r /etc/tableau/reg.json)
 fi
 
 set -x
 
-cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER -a $USERNAME "${LICENSE_ARGS[@]}" "${BOOTSTRAP_ARGS[@]}" "${COORDINATOR_ARGS[@]}" --accepteula tableau-server-*.rpm
+rpm -ivh tableau-server-*.rpm
+
+for lic in \
+  /opt/tableau/tableau_server/packages/templates.*/license/tableau.lic.templ \
+  /opt/tableau/tableau_server/packages/templates.*/license/tableauTabadmin.lic.templ \
+  /opt/tableau/tableau_server/packages/bin.*/tableau.lic \
+  ; do
+  echo 'VENDOR tableau port=27010' >> "$lic"
+done
+
+cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER -a $USERNAME "${LICENSE_ARGS[@]}" "${BOOTSTRAP_ARGS[@]}" "${INSTALLER_ARGS[@]}" --accepteula tableau-server-*.rpm
+
+#https://onlinehelp.tableau.com/current/server-linux/en-us/ports_license_daemon.htm
 
 #XXX: Do we need to wait for startup to complete here ?
 if [ "coordinator" == "$NUBIS_PURPOSE" ]; then
+  TSM=$(ls /opt/tableau/tableau_server/packages/customer-bin.*/tsm)
+
   # establish admin session
   $TSM login --username $USERNAME --password $PASSWORD
 
