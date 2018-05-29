@@ -115,6 +115,16 @@ resource "aws_security_group" "tableau" {
   }
 
   ingress {
+    from_port = 22
+    to_port   = 22
+    protocol  = "tcp"
+
+    security_groups = [
+      "${module.info.ssh_security_group}",
+    ]
+  }
+
+  ingress {
     from_port = 80
     to_port   = 80
     protocol  = "tcp"
