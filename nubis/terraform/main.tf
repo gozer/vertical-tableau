@@ -1,5 +1,5 @@
 locals {
-  instance_type     = "${var.environment == "prod" ? "r4.8xlarge" : "m4.xlarge"}"
+  instance_type     = "${var.environment == "prod" ? "r4.16xlarge" : "m4.xlarge"}"
   root_storage_size = "256"
   worker_count      = "${var.environment == "prod" ? 0 : 2}"
 }
