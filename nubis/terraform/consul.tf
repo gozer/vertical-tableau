@@ -41,7 +41,7 @@ resource "consul_keys" "config" {
 
   key {
     path   = "${module.consul.config_prefix}/PublicHostname"
-    value  = "${module.dns.fqdn}"
+    value  = "${lookup(var.domain_name, var.environment, module.dns.fqdn)}"
     delete = true
   }
 }

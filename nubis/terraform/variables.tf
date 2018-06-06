@@ -33,3 +33,12 @@ variable "nubis_sudo_groups" {
 variable "nubis_user_groups" {
   default = "team_dbeng"
 }
+
+variable "domain_name" {
+  type = "map"
+
+  default = {
+    "stage" = "dataviz-nubis.allizom.org"
+    "prod"  = "dataviz-nubis.mozilla.org"
+  }
+}
