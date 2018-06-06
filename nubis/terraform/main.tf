@@ -61,6 +61,8 @@ module "load_balancer" {
   environment  = "${var.environment}"
   account      = "${var.account}"
   service_name = "${var.service_name}"
+
+  ssl_cert_name_prefix = "${var.service_name}"
 }
 
 module "dns" {
