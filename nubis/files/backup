@@ -1,0 +1,61 @@
+#!/bin/bash -l
+
+# Shove all logs to a log file as well
+exec &> >(tee >( ts > /var/log/tableau-backup.log)) 2>&1
+
+set -e
+
+TSM=$(echo /opt/tableau/tableau_server/packages/customer-bin.*)
+
+export PATH=/usr/local/bin:$TSM:$PATH
+
+NUBIS_PROJECT=$(nubis-metadata NUBIS_PROJECT)
+NUBIS_ENVIRONMENT=$(nubis-metadata NUBIS_ENVIRONMENT)
+
+BACKUP_BUCKET=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/S3/Bucket/Backups" )
+BACKUP_DIR=/var/opt/tableau/tableau_server/data/tabsvc/files/backups
+
+TSM_USERNAME=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Username" )
+TSM_PASSWORD=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Password" )
+
+cleanup () {
+ rm -rfv "${BACKUP_DIR:?}/"* 2>/dev/null
+}
+
+# Ensure we clean on exit
+trap cleanup EXIT
+
+# And cleanup old backups *now*
+cleanup
+
+# Login so we can perform administrative tasks
+tsm login --username "${TSM_USERNAME:-tableauops}" --password "${TSM_PASSWORD:-foobar123}"
+
+# Check that all is well
+tsm status -v
+
+ACTION=$1
+
+if [ "$ACTION" == "backup" ]; then
+  echo "Backing up to S3"
+
+  # Perform the actual backup
+  time tsm maintenance backup --file nubis -d -i "Automated Backup"
+
+  BACKUP_FILE=$(cd $BACKUP_DIR && ls -- *.tsbak)
+
+  aws s3 sync "$BACKUP_DIR/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE"
+  aws s3 cp "s3://$BACKUP_BUCKET/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/latest.tsbak"
+
+elif [ "$ACTION" == "restore" ]; then
+  echo "Restoring from S3"
+
+  # Grab the latest backup
+  aws s3 sync "s3://$BACKUP_BUCKET/backups/latest.tsbak" "$BACKUP_DIR/latest.tsbak"
+
+  # Actually restore
+  time tsm maintenance restore --restart-server --file latest.tsbak
+else
+  echo "Usage $0 backup|restore"
+  exit 1
+fi

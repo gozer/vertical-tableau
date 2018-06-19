@@ -6,6 +6,14 @@ file { "/etc/nubis.d/${project_name}":
   source => 'puppet:///nubis/files/startup',
 }
 
+file { "/usr/local/bin/${project_name}-backup":
+  ensure => file,
+  owner  => root,
+  group  => root,
+  mode   => '0755',
+  source => 'puppet:///nubis/files/backup',
+}
+
 file { '/etc/tableau':
   ensure => directory,
   owner  => 'root',
