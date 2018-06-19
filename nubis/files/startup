@@ -8,7 +8,7 @@ set -x
 export PATH=/usr/local/bin:$PATH
 
 USERNAME=tableauops
-PASSWORD=foobar123
+PASSWORD=$(pwgen -n1)
 
 #XXX Secrets needs to be generated
 cat <<EOF > /etc/tableau/secrets
@@ -36,7 +36,7 @@ tsm_admin_pass="$PASSWORD"
 # the Tableau administrator must be a valid account from the directory service.
 #
 tableau_server_admin_user="nubis"
-tableau_server_admin_pass="foobar123"
+tableau_server_admin_pass="$PASSWORD"
 EOF
 
 useradd -m -r $USERNAME
@@ -52,7 +52,7 @@ INSTALLER=$(ls /opt/tableau/tableau_server_automated_installer/automated-install
 
 CONFIG=/etc/tableau/settings.json
 
-INSTALLER_ARGS=(-s /etc/tableau/secrets -f $CONFIG -r /etc/tableau/reg.json)
+INSTALLER_ARGS=(-s /etc/tableau/secrets -f "$CONFIG" -r /etc/tableau/reg.json)
 
 if [ "worker" == "$NUBIS_PURPOSE" ]; then
   echo "Worker Bee, joining with Coordinator"
@@ -100,9 +100,12 @@ if [ "coordinator" == "$NUBIS_PURPOSE" ]; then
   TSM=$(ls /opt/tableau/tableau_server/packages/customer-bin.*/tsm)
 
   # establish admin session
-  $TSM login --username $USERNAME --password $PASSWORD
+  $TSM login --username "$USERNAME" --password "$PASSWORD"
 
   echo "recording bootstrap configuration"
   $TSM topology nodes get-bootstrap-file --file /etc/tableau/bootstrap.json
   consul kv put "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Bootstrap" @/etc/tableau/bootstrap.json
+  
+  consul kv put "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Username" "$USERNAME"
+  consul kv put "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Password" "$PASSWORD"
 fi

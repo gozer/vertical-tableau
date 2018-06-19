@@ -8,28 +8,28 @@ file { "/etc/nubis.d/${project_name}":
 
 file { '/etc/tableau':
   ensure => directory,
-  owner   => 'root',
-  group   => 'root',
+  owner  => 'root',
+  group  => 'root',
 }
 
 file { '/etc/tableau/config.json':
-  ensure => file,
-  owner  => root,
-  group  => root,
-  mode   => '0644',
+  ensure  => file,
+  owner   => root,
+  group   => root,
+  mode    => '0644',
   require => [
     File['/etc/tableau'],
   ],
-  source => 'puppet:///nubis/files/tableau/config.json',
+  source  => 'puppet:///nubis/files/tableau/config.json',
 }
 
 file { '/etc/tableau/reg.json':
-  ensure => file,
-  owner  => root,
-  group  => root,
-  mode   => '0644',
+  ensure  => file,
+  owner   => root,
+  group   => root,
+  mode    => '0644',
   require => [
     File['/etc/tableau'],
   ],
-  source => 'puppet:///nubis/files/tableau/reg.json',
+  source  => 'puppet:///nubis/files/tableau/reg.json',
 }
