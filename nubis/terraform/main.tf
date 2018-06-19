@@ -2,6 +2,9 @@ locals {
   instance_type     = "${var.environment == "prod" ? "r4.16xlarge" : "m4.xlarge"}"
   root_storage_size = "256"
   worker_count      = "${var.environment == "prod" ? 0 : 0}"
+
+  # Sloooowwww bootup, give it 40 minutes
+  health_check_grace_period = "${ 40 * 60 }"
 }
 
 module "coordinator" {
@@ -21,7 +24,8 @@ module "coordinator" {
   security_group        = "${data.consul_keys.vertical.var.client_security_group_id},${aws_security_group.tableau.id}"
   security_group_custom = true
 
-  health_check_type = "EC2"
+  health_check_type         = "EC2"
+  health_check_grace_period = "${local.health_check_grace_period}"
 
   instance_type     = "${local.instance_type}"
   root_storage_size = "${local.root_storage_size}"
@@ -44,8 +48,9 @@ module "worker" {
   security_group        = "${data.consul_keys.vertical.var.client_security_group_id},${aws_security_group.tableau.id}"
   security_group_custom = true
 
-  health_check_type = "EC2"
-  min_instances     = "${local.worker_count}"
+  health_check_type         = "EC2"
+  health_check_grace_period = "${local.health_check_grace_period}"
+  min_instances             = "${local.worker_count}"
 
   instance_type     = "${local.instance_type}"
   root_storage_size = "${local.root_storage_size}"
