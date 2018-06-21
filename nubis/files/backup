@@ -45,13 +45,13 @@ if [ "$ACTION" == "backup" ]; then
   BACKUP_FILE=$(cd $BACKUP_DIR && ls -- *.tsbak)
 
   aws s3 sync "$BACKUP_DIR/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE"
-  aws s3 cp "s3://$BACKUP_BUCKET/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/latest.tsbak"
+  aws s3 cp "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/latest.tsbak"
 
 elif [ "$ACTION" == "restore" ]; then
   echo "Restoring from S3"
 
   # Grab the latest backup
-  aws s3 sync "s3://$BACKUP_BUCKET/backups/latest.tsbak" "$BACKUP_DIR/latest.tsbak"
+  aws s3 cp "s3://$BACKUP_BUCKET/backups/latest.tsbak" "$BACKUP_DIR/latest.tsbak"
 
   # Actually restore
   time tsm maintenance restore --restart-server --file latest.tsbak
