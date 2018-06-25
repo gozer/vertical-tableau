@@ -192,6 +192,8 @@ resource "aws_security_group" "tableau" {
 
 # Custom DNS work
 
+data "aws_elb_hosted_zone_id" "main" {}
+
 resource "aws_route53_record" "primary" {
   zone_id = "${module.info.hosted_zone_id}"
 
@@ -202,7 +204,7 @@ resource "aws_route53_record" "primary" {
 
   alias {
     name                   = "${module.load_balancer.address}"
-    zone_id                = "${module.info.hosted_zone_id}"
+    zone_id                = "${data.aws_elb_hosted_zone_id.main.id}"
     evaluate_target_health = true
   }
 
