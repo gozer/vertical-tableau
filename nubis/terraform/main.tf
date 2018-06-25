@@ -95,6 +95,18 @@ module "backups" {
   role         = "${module.coordinator.role},${module.worker.role}"
 }
 
+module "fallback" {
+  source       = "github.com/nubisproject/nubis-terraform//bucket?ref=v2.2.0"
+  region       = "${var.region}"
+  environment  = "${var.environment}"
+  account      = "${var.account}"
+  service_name = "${var.service_name}"
+  purpose      = "fallback"
+  role_cnt     = "2"
+  role         = "${module.coordinator.role},${module.worker.role}"
+  acl          = "public-read"
+}
+
 module "mail" {
   source       = "github.com/nubisproject/nubis-terraform//mail?ref=v2.2.0"
   region       = "${var.region}"
@@ -208,7 +220,7 @@ resource "aws_route53_record" "secondary" {
   set_identifier = "www-${var.service_name}-${var.environment}"
 
   alias {
-    name                   = "${module.load_balancer.address}"
+    name                   = "${module.fallback.website_endpoint}"
     zone_id                = "${module.info.hosted_zone_id}"
     evaluate_target_health = true
   }
