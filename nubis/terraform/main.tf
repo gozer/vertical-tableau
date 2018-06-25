@@ -74,6 +74,11 @@ module "load_balancer" {
   ssl_cert_name_prefix = "${var.service_name}"
 }
 
+#XXX: Can't delete this until
+# https://github.com/nubisproject/nubis-terraform/issues/201
+# is fixed
+# Wait for: Nubis v2.3.0
+# 
 module "dns" {
   source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.2.0"
   region       = "${var.region}"
@@ -213,7 +218,11 @@ resource "aws_route53_record" "primary" {
   }
 }
 
-resource "aws_route53_record" "secondary" {
+data "aws_s3_bucket" "fallback" {
+  bucket = "${module.fallback.name}"
+}
+
+resource "aws_route53_record" "fallback" {
   zone_id = "${module.info.hosted_zone_id}"
 
   name = "www.${var.service_name}.${var.environment}.${var.arena}"
@@ -223,7 +232,7 @@ resource "aws_route53_record" "secondary" {
 
   alias {
     name                   = "${module.fallback.website_endpoint}"
-    zone_id                = "${module.info.hosted_zone_id}"
+    zone_id                = "${data.aws_s3_bucket.fallback.hosted_zone_id}"
     evaluate_target_health = true
   }
 
