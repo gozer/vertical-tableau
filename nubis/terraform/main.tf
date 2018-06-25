@@ -222,6 +222,13 @@ data "aws_s3_bucket" "fallback" {
   bucket = "${module.fallback.name}"
 }
 
+resource "aws_s3_bucket_object" "fallback" {
+  bucket = "${module.fallback.name}"
+  key    = "index.html"
+  source = "${path.module}/files/outage.html"
+  etag   = "${md5(file("${path.module}/files/outage.html"))}"
+}
+
 resource "aws_route53_record" "fallback" {
   zone_id = "${module.info.hosted_zone_id}"
 
