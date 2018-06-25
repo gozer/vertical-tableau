@@ -1,3 +1,7 @@
+provider "aws" {
+  region = "${var.region}"
+}
+
 locals {
   instance_type     = "${var.environment == "prod" ? "r4.16xlarge" : "m4.xlarge"}"
   root_storage_size = "256"
@@ -70,6 +74,16 @@ module "load_balancer" {
   ssl_cert_name_prefix = "${var.service_name}"
 }
 
+module "dns" {
+  source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.2.0"
+  region       = "${var.region}"
+  environment  = "${var.environment}"
+  account      = "${var.account}"
+  service_name = "${var.service_name}"
+  prefix       = "www2"
+  target       = "${module.load_balancer.address}"
+}
+
 module "backups" {
   source       = "github.com/nubisproject/nubis-terraform//bucket?ref=v2.2.0"
   region       = "${var.region}"
@@ -87,10 +101,6 @@ module "mail" {
   environment  = "${var.environment}"
   account      = "${var.account}"
   service_name = "${var.service_name}"
-}
-
-provider "aws" {
-  region = "${var.region}"
 }
 
 module "info" {
