@@ -1,3 +1,3 @@
 output "address" {
-  value = "https://${module.dns.fqdn}/"
+  value = "https://${aws_route53_record.primary.fqdn}/"
 }
