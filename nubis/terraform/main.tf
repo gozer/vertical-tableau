@@ -70,15 +70,6 @@ module "load_balancer" {
   ssl_cert_name_prefix = "${var.service_name}"
 }
 
-module "dns" {
-  source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.2.0"
-  region       = "${var.region}"
-  environment  = "${var.environment}"
-  account      = "${var.account}"
-  service_name = "${var.service_name}"
-  target       = "${module.load_balancer.address}"
-}
-
 module "backups" {
   source       = "github.com/nubisproject/nubis-terraform//bucket?ref=v2.2.0"
   region       = "${var.region}"
@@ -174,5 +165,45 @@ resource "aws_security_group" "tableau" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Custom DNS work
+
+resource "aws_route53_record" "primary" {
+  zone_id = "${module.info.hosted_zone_id}"
+
+  name = "www.${var.service_name}.${var.environment}.${var.arena}"
+  type = "A"
+
+  set_identifier = "www-${var.service_name}-${var.environment}"
+
+  alias {
+    name                   = "${module.load_balancer.address}"
+    zone_id                = "${module.info.hosted_zone_id}"
+    evaluate_target_health = true
+  }
+
+  failover_routing_policy {
+    type = "PRIMARY"
+  }
+}
+
+resource "aws_route53_record" "secondary" {
+  zone_id = "${module.info.hosted_zone_id}"
+
+  name = "www.${var.service_name}.${var.environment}.${var.arena}"
+  type = "A"
+
+  set_identifier = "www-${var.service_name}-${var.environment}"
+
+  alias {
+    name                   = "${module.load_balancer.address}"
+    zone_id                = "${module.info.hosted_zone_id}"
+    evaluate_target_health = true
+  }
+
+  failover_routing_policy {
+    type = "SECONDARY"
   }
 }
