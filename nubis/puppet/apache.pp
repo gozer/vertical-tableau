@@ -60,7 +60,7 @@ file { '/var/www/html/outage.html':
   group   => root,
   mode    => '0644',
   require => [
-    Class['Nubis_apache'],
+    Class['Apache'],
   ],
   source  => 'puppet:///nubis/files/outage.html',
 }
