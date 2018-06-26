@@ -72,6 +72,9 @@ module "load_balancer" {
   service_name = "${var.service_name}"
 
   ssl_cert_name_prefix = "${var.service_name}"
+
+  backend_port_http  = 81
+  backend_port_https = 81
 }
 
 #XXX: Can't delete this until
@@ -137,8 +140,8 @@ resource "aws_security_group" "tableau" {
   }
 
   ingress {
-    from_port = 80
-    to_port   = 80
+    from_port = 81
+    to_port   = 81
     protocol  = "tcp"
     self      = true
 
