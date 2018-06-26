@@ -85,7 +85,6 @@ module "dns" {
   environment  = "${var.environment}"
   account      = "${var.account}"
   service_name = "${var.service_name}"
-  prefix       = "www2"
   target       = "${module.load_balancer.address}"
 }
 
@@ -98,18 +97,6 @@ module "backups" {
   purpose      = "backups"
   role_cnt     = "2"
   role         = "${module.coordinator.role},${module.worker.role}"
-}
-
-module "fallback" {
-  source       = "github.com/nubisproject/nubis-terraform//bucket?ref=v2.2.0"
-  region       = "${var.region}"
-  environment  = "${var.environment}"
-  account      = "${var.account}"
-  service_name = "${var.service_name}"
-  purpose      = "fallback"
-  role_cnt     = "2"
-  role         = "${module.coordinator.role},${module.worker.role}"
-  acl          = "public-read"
 }
 
 module "mail" {
@@ -192,58 +179,5 @@ resource "aws_security_group" "tableau" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-# Custom DNS work
-
-data "aws_elb_hosted_zone_id" "main" {}
-
-resource "aws_route53_record" "primary" {
-  zone_id = "${module.info.hosted_zone_id}"
-
-  name = "www.${var.service_name}.${var.environment}.${var.arena}"
-  type = "A"
-
-  set_identifier = "www-${var.service_name}-${var.environment}-primary"
-
-  alias {
-    name                   = "${module.load_balancer.address}"
-    zone_id                = "${data.aws_elb_hosted_zone_id.main.id}"
-    evaluate_target_health = true
-  }
-
-  failover_routing_policy {
-    type = "PRIMARY"
-  }
-}
-
-data "aws_s3_bucket" "fallback" {
-  bucket = "${module.fallback.name}"
-}
-
-resource "aws_s3_bucket_object" "fallback" {
-  bucket = "${module.fallback.name}"
-  key    = "index.html"
-  source = "${path.module}/files/outage.html"
-  etag   = "${md5(file("${path.module}/files/outage.html"))}"
-}
-
-resource "aws_route53_record" "fallback" {
-  zone_id = "${module.info.hosted_zone_id}"
-
-  name = "www.${var.service_name}.${var.environment}.${var.arena}"
-  type = "A"
-
-  set_identifier = "www-${var.service_name}-${var.environment}-fallback"
-
-  alias {
-    name                   = "${module.fallback.website_endpoint}"
-    zone_id                = "${data.aws_s3_bucket.fallback.hosted_zone_id}"
-    evaluate_target_health = true
-  }
-
-  failover_routing_policy {
-    type = "SECONDARY"
   }
 }
