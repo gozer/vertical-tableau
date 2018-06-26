@@ -110,7 +110,7 @@ if [ "coordinator" == "$NUBIS_PURPOSE" ]; then
   consul kv put "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Password" "$PASSWORD"
 
   backoff=4
-  until tsm status -v; do
+  until $TSM status -v; do
     echo "Waiting $backoff seconds for TSM startup to complete"
     sleep $backoff
     backoff=$(( backoff * 15 / 10 ))
