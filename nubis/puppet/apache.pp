@@ -1,6 +1,6 @@
 # Define how Apache should be installed and configured
-class { 'nubis_apache':
-  port => 81,
+class { 'apache':
+  default_vhost => false,
 }
 
 class { 'apache::mod::proxy': }
