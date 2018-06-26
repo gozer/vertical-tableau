@@ -41,7 +41,7 @@ resource "consul_keys" "config" {
 
   key {
     path   = "${module.consul.config_prefix}/PublicHostname"
-    value  = "${lookup(var.domain_name, var.environment, aws_route53_record.primary.fqdn)}"
+    value  = "${lookup(var.domain_name, var.environment, module.dns.fqdn)}"
     delete = true
   }
 }
