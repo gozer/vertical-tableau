@@ -35,14 +35,14 @@ FileETag None
         rewrite_cond => ['%{HTTP:X-Forwarded-Proto} =http'],
         rewrite_rule => ['. https://%{HTTP:Host}%{REQUEST_URI} [L,R=permanent]'],
       }
-    ]
+    ],
 
     error_documents     => [
       {
         'error_code' => '503',
         'document'   => '/outage.html'
       },
-    ]
+    ],
 
     proxy_preserve_host => true,
     proxy_pass          => [
@@ -51,7 +51,7 @@ FileETag None
         'url'          => 'http://localhost:80/',
         'reverse_urls' => [ 'http://localhost:80/' ],
       },
-    ]
+    ],
 }
 
 file { '/var/www/html/outage.html':
@@ -60,7 +60,7 @@ file { '/var/www/html/outage.html':
   group   => root,
   mode    => '0644',
   require => [
-    File['/etc/tableau'],
+    Class['Nubis_apache'],
   ],
   source  => 'puppet:///nubis/files/outage.html',
 }
