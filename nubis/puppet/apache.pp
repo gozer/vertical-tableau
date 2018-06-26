@@ -47,14 +47,26 @@ FileETag None
     proxy_preserve_host => true,
     proxy_pass          => [
       {
-        'path'         => '/',
-        'url'          => 'http://localhost:80/',
-        'reverse_urls' => [ 'http://localhost:80/' ],
+        'path'          => '/',
+        'url'           => 'http://localhost:80/',
+        'reverse_urls'  => [ 'http://localhost:80/' ],
+        'no_proxy_uris' => [ '/outage.html', '/health.html' ],
       },
     ],
 }
 
 file { '/var/www/html/outage.html':
+  ensure  => file,
+  owner   => root,
+  group   => root,
+  mode    => '0644',
+  require => [
+    Class['Apache'],
+  ],
+  source  => 'puppet:///nubis/files/outage.html',
+}
+
+file { '/var/www/html/health.html':
   ensure  => file,
   owner   => root,
   group   => root,

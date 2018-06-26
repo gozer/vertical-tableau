@@ -54,7 +54,7 @@ module "worker" {
 
   health_check_type         = "EC2"
   health_check_grace_period = "${local.health_check_grace_period}"
-  health_check_target       = "HTTP:81/"
+  health_check_target       = "HTTP:81/health.html"
   min_instances             = "${local.worker_count}"
 
   instance_type     = "${local.instance_type}"
