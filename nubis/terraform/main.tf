@@ -205,7 +205,7 @@ resource "aws_route53_record" "primary" {
   name = "www.${var.service_name}.${var.environment}.${var.arena}"
   type = "A"
 
-  set_identifier = "www-${var.service_name}-${var.environment}"
+  set_identifier = "www-${var.service_name}-${var.environment}-primary"
 
   alias {
     name                   = "${module.load_balancer.address}"
@@ -235,7 +235,7 @@ resource "aws_route53_record" "fallback" {
   name = "www.${var.service_name}.${var.environment}.${var.arena}"
   type = "A"
 
-  set_identifier = "www-${var.service_name}-${var.environment}"
+  set_identifier = "www-${var.service_name}-${var.environment}-fallback"
 
   alias {
     name                   = "${module.fallback.website_endpoint}"
