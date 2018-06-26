@@ -102,6 +102,18 @@ module "backups" {
   role         = "${module.coordinator.role},${module.worker.role}"
 }
 
+module "fallback" {
+  source       = "github.com/nubisproject/nubis-terraform//bucket?ref=develop"
+  region       = "${var.region}"
+  environment  = "${var.environment}"
+  account      = "${var.account}"
+  service_name = "${var.service_name}"
+  purpose      = "fallback"
+  role_cnt     = "2"
+  role         = "${module.coordinator.role},${module.worker.role}"
+  acl          = "public-read"
+}
+
 module "mail" {
   source       = "github.com/nubisproject/nubis-terraform//mail?ref=v2.2.0"
   region       = "${var.region}"
