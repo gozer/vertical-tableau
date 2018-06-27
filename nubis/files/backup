@@ -44,7 +44,7 @@ if [ "$ACTION" == "backup" ]; then
 
   BACKUP_FILE=$(cd $BACKUP_DIR && ls -- *.tsbak)
 
-  aws s3 sync "$BACKUP_DIR/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE"
+  aws s3 cp "$BACKUP_DIR/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE"
   aws s3 cp "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/latest.tsbak"
 
 elif [ "$ACTION" == "restore" ]; then
