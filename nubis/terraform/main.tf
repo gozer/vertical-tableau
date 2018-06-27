@@ -54,7 +54,6 @@ module "worker" {
 
   health_check_type         = "EC2"
   health_check_grace_period = "${local.health_check_grace_period}"
-  health_check_target       = "HTTP:81/health.html"
   min_instances             = "${local.worker_count}"
 
   instance_type     = "${local.instance_type}"
@@ -76,6 +75,8 @@ module "load_balancer" {
 
   backend_port_http  = 81
   backend_port_https = 81
+
+  health_check_target = "HTTP:81/health.html"
 }
 
 #XXX: Can't delete this until
