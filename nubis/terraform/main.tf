@@ -79,11 +79,6 @@ module "load_balancer" {
   health_check_target = "HTTP:81/health.html"
 }
 
-#XXX: Can't delete this until
-# https://github.com/nubisproject/nubis-terraform/issues/201
-# is fixed
-# Wait for: Nubis v2.3.0
-# 
 module "dns" {
   source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.2.0"
   region       = "${var.region}"
@@ -102,18 +97,6 @@ module "backups" {
   purpose      = "backups"
   role_cnt     = "2"
   role         = "${module.coordinator.role},${module.worker.role}"
-}
-
-module "fallback" {
-  source       = "github.com/nubisproject/nubis-terraform//bucket?ref=develop"
-  region       = "${var.region}"
-  environment  = "${var.environment}"
-  account      = "${var.account}"
-  service_name = "${var.service_name}"
-  purpose      = "fallback"
-  role_cnt     = "2"
-  role         = "${module.coordinator.role},${module.worker.role}"
-  acl          = "public-read"
 }
 
 module "mail" {
