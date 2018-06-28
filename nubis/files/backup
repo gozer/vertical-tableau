@@ -58,13 +58,13 @@ if [ "$ACTION" == "backup" ]; then
   aws s3 cp "$BACKUP_DIR/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE"
 
   # Record this backup at the latest one
-  echo "$BACKUP_FILE" | aws s3 cp - "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/latest"
+  echo "$BACKUP_FILE" | aws s3 cp - "s3://$BACKUP_BUCKET/backups/latest"
 
 elif [ "$ACTION" == "restore" ]; then
   echo "Restoring from S3"
 
   # Grab the latest backup name
-  BACKUP_FILE=$(aws s3 cp "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/latest" - )
+  BACKUP_FILE=$(aws s3 cp "s3://$BACKUP_BUCKET/backups/latest" - )
 
   if [ -z "$BACKUP_FILE" ]; then
     echo "Coulnd't find an existing backup in s3://$BACKUP_BUCKET/backups"
