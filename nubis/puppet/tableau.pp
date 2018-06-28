@@ -14,6 +14,16 @@ file { "/usr/local/bin/${project_name}-backup":
   source => 'puppet:///nubis/files/backup',
 }
 
+cron { 'backup':
+  ensure      => 'present',
+  command     => "nubis-purpose coordinator nubis-cron ${project_name}-backup /usr/local/bin/${project_name}-backup backup",
+  hour        => '4',
+  minute      => fqdn_rand(60),
+  environment => [
+    'PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/opt/aws/bin',
+  ],
+}
+
 file { '/etc/tableau':
   ensure => directory,
   owner  => 'root',
