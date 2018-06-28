@@ -1,5 +1,8 @@
 #!/bin/bash -l
 
+# Protect ourselves against concurrent execution, wait for exclusive lock before proceeding
+[ "${FLOCKER}" != "$0" ] && exec env FLOCKER="$0" flock -e "$0" "$0" "$@"
+
 # Shove all logs to a log file as well
 exec &> >(tee >( ts > /var/log/tableau-backup.log)) 2>&1
 
@@ -14,6 +17,7 @@ NUBIS_ENVIRONMENT=$(nubis-metadata NUBIS_ENVIRONMENT)
 
 BACKUP_BUCKET=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/S3/Bucket/Backups" )
 BACKUP_DIR=/var/opt/tableau/tableau_server/data/tabsvc/files/backups
+RESTORE_MARKER=/opt/tableau/.restored
 
 TSM_USERNAME=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Username" )
 TSM_PASSWORD=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Password" )
@@ -39,22 +43,41 @@ ACTION=$1
 if [ "$ACTION" == "backup" ]; then
   echo "Backing up to S3"
 
-  # Perform the actual backup
-  time tsm maintenance backup --file nubis -d -i "Automated Backup"
+  if [ ! -f "$RESTORE_MARKER" ]; then
+    echo "Initial restore hasn't completed, skipping backup"
+    exit 0
+  fi
 
+  # Perform the actual backup
+  timeout 90m time tsm maintenance backup --file nubis -d -i "Automated Backup"
+
+  # Find the backup file
   BACKUP_FILE=$(cd $BACKUP_DIR && ls -- *.tsbak)
 
+  # Copy to S3
   aws s3 cp "$BACKUP_DIR/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE"
-  aws s3 cp "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/latest.tsbak"
+
+  # Record this backup at the latest one
+  echo "$BACKUP_FILE" | aws s3 cp - "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/latest"
 
 elif [ "$ACTION" == "restore" ]; then
   echo "Restoring from S3"
 
+  # Grab the latest backup name
+  BACKUP_FILE=$(aws s3 cp "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/latest" - )
+
+  if [ -z "$BACKUP_FILE" ]; then
+    echo "Coulnd't find an existing backup in s3://$BACKUP_BUCKET/backups"
+    exit 1
+  fi
+
   # Grab the latest backup
-  aws s3 cp "s3://$BACKUP_BUCKET/backups/latest.tsbak" "$BACKUP_DIR/latest.tsbak"
+  aws s3 cp "s3://$BACKUP_BUCKET/backups/latest.tsbak" "$BACKUP_DIR/$BACKUP_FILE"
 
   # Actually restore
-  time tsm maintenance restore --restart-server --file latest.tsbak
+  time tsm maintenance restore --restart-server --file "$BACKUP_FILE"
+
+  echo "$BACKUP_FILE" >  "$RESTORE_MARKER"
 else
   echo "Usage $0 backup|restore"
   exit 1
