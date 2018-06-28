@@ -49,7 +49,7 @@ if [ "$ACTION" == "backup" ]; then
   fi
 
   # Perform the actual backup
-  timeout 90m time tsm maintenance backup --file nubis -d -i "Automated Backup"
+  timeout 3h time tsm maintenance backup --file nubis -d -i "Automated Backup"
 
   # Find the backup file
   BACKUP_FILE=$(cd $BACKUP_DIR && ls -- *.tsbak)
