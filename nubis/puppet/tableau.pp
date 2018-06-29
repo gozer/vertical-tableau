@@ -16,7 +16,7 @@ file { "/usr/local/bin/${project_name}-backup":
 
 cron { 'backup':
   ensure      => 'present',
-  command     => "nubis-purpose coordinator nubis-cron ${project_name}-backup /usr/local/bin/${project_name}-backup backup",
+  command     => "nubis-purpose coordinator nubis-cron ${project_name}-backup /usr/local/bin/${project_name}-backup save",
   hour        => '4',
   minute      => fqdn_rand(60),
   environment => [

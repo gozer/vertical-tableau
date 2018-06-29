@@ -40,7 +40,7 @@ tsm status -v
 
 ACTION=$1
 
-if [ "$ACTION" == "backup" ]; then
+if [ "$ACTION" == "save" ]; then
   echo "Backing up to S3"
 
   if [ ! -f "$RESTORE_MARKER" ]; then
