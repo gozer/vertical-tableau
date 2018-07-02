@@ -45,6 +45,7 @@ FileETag None
     ],
 
     proxy_preserve_host => true,
+    proxy_add_headers   => false,
     proxy_pass          => [
       {
         'path'          => '/',

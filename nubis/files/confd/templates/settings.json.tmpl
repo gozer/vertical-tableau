@@ -9,6 +9,8 @@
     "gateway.external_url": "https://{{ getv "/config/PublicHostname" }}",
     "vizportal.openid.config_url": "{{ getv "/config/OpenID/ConfigurationURL" }}",
     "gateway.public.host": "{{ getv "/config/PublicHostname" }}",
+    "gateway.trusted": "127.0.0.1",
+    "wgserver.trusted_hosts" : "{{ getv "/config/TrustedHosts" "127.0.0.1" }}",
     "vizportal.openid.client_id": "{{ getv "/config/OpenID/ClientID" }}",
     "vizportal.openid.client_secret": "{{ getv "/config/OpenID/ClientSecret" }}",
     "vizportal.openid.enabled": true,
