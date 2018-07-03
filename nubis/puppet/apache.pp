@@ -5,6 +5,14 @@ class { 'apache':
 
 class { 'apache::mod::proxy': }
 class { 'apache::mod::proxy_http': }
+class { 'apache::mod::remoteip':
+  proxy_ips => [
+    '127.0.0.1',
+    '10.0.0.0/8',
+    '172.16.0.0/12',
+    '192.168.0.0/16',
+  ],
+}
 
 apache::vhost { $project_name:
     port                => 81,
