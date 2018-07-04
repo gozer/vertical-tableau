@@ -208,8 +208,8 @@ data "aws_iam_policy_document" "backups_files" {
     ]
 
     resources = [
-      "${module.backups_files.arn}",
-      "${module.backups_files.arn}/*",
+      "${module.backups.arn}",
+      "${module.backups.arn}/*",
     ]
   }
 }
