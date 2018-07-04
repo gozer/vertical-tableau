@@ -19,6 +19,8 @@ BACKUP_BUCKET=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRON
 BACKUP_DIR=/var/opt/tableau/tableau_server/data/tabsvc/files/backups
 RESTORE_MARKER=/opt/tableau/.restored
 
+FILES_DIR=/var/lib/tableau/files
+
 TSM_USERNAME=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Username" )
 TSM_PASSWORD=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Password" )
 
@@ -57,6 +59,9 @@ if [ "$ACTION" == "save" ]; then
   # Copy to S3
   aws s3 cp "$BACKUP_DIR/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE"
 
+  # Backup plain files
+  aws s3 sync --delete "$FILES_DIR" "s3://$BACKUP_BUCKET/backups/files/"
+
   # Record this backup at the latest one
   echo -n "$BACKUP_FILE" | aws s3 cp - "s3://$BACKUP_BUCKET/backups/latest"
 
@@ -74,10 +79,17 @@ elif [ "$ACTION" == "restore" ]; then
   # Grab the latest backup
   aws s3 cp "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE" "$BACKUP_DIR/$BACKUP_FILE"
 
+  # Restore plain files
+  aws s3 sync --delete "s3://$BACKUP_BUCKET/backups/files/" "$FILES_DIR"
+
   # Actually restore
   time tsm maintenance restore --restart-server --file "$BACKUP_FILE"
 
   echo "$BACKUP_FILE" >  "$RESTORE_MARKER"
+elif [ "$ACTION" == "pull" ]; then
+  echo "Pulling files from S3"
+
+  aws s3 sync --delete "s3://$BACKUP_BUCKET/backups/files/" "$FILES_DIR"
 else
   echo "Usage $0 backup|restore"
   exit 1

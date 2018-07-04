@@ -181,3 +181,30 @@ resource "aws_security_group" "tableau" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+resource "aws_iam_user" "backups_files" {
+  name = "${var.service_name}-${var.environment}-backups_files"
+  path = "/applicaton/${var.service_name}/"
+}
+
+resource "aws_iam_access_key" "backups_files" {
+  user = "${aws_iam_user.backups_files.name}"
+}
+
+resource "aws_iam_user_policy" "backups_files" {
+  name = "${var.service_name}-${var.environment}-backups_files"
+  user = "${aws_iam_user.backups_files.name}"
+
+  policy = "${data.aws_iam_policy_document.backups_files.json}"
+}
+
+data "aws_iam_policy_document" "backups_files" {
+  statement {
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject",
+      "s3:ListBucket",
+    ]
+  }
+}

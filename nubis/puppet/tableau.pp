@@ -24,10 +24,34 @@ cron { 'backup':
   ],
 }
 
+cron::hourly { 'pull':
+  ensure      => 'present',
+  command     => "nubis-cron ${project_name}-pull /usr/local/bin/${project_name}-backup pull",
+  minute      => fqdn_rand(60),
+  environment => [
+    'PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/opt/aws/bin',
+  ],
+}
+
 file { '/etc/tableau':
   ensure => directory,
   owner  => 'root',
   group  => 'root',
+}
+
+file { '/var/lib/tableau':
+  ensure => directory,
+  owner  => 'root',
+  group  => 'root',
+}
+
+file { '/var/lib/tableau/files':
+  ensure => directory,
+  owner  => 'root',
+  group  => 'root',
+  require => [
+    File['/var/lib/tableau'],
+  ],
 }
 
 file { '/etc/tableau/config.json':

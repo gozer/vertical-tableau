@@ -44,4 +44,16 @@ resource "consul_keys" "config" {
     value  = "${lookup(var.domain_name, var.environment, module.dns.fqdn)}"
     delete = true
   }
+
+  key {
+    path   = "${module.consul.config_prefix}/Users/BackupsFiles/AccessKey"
+    value  = "${aws_iam_access_key.backups_files.id}"
+    delete = true
+  }
+
+  key {
+    path   = "${module.consul.config_prefix}/Users/BackupsFiles/SecretKey"
+    value  = "${aws_iam_access_key.backups_files.secret}"
+    delete = true
+  }
 }
