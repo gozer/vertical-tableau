@@ -206,5 +206,10 @@ data "aws_iam_policy_document" "backups_files" {
       "s3:DeleteObject",
       "s3:ListBucket",
     ]
+
+    resources = [
+      "${module.backups_files.arn}",
+      "${module.backups_files.arn}/*",
+    ]
   }
 }
