@@ -59,9 +59,6 @@ if [ "$ACTION" == "save" ]; then
   # Copy to S3
   aws s3 cp "$BACKUP_DIR/$BACKUP_FILE" "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE"
 
-  # Backup plain files
-  aws s3 sync --delete "$FILES_DIR" "s3://$BACKUP_BUCKET/backups/files/"
-
   # Record this backup at the latest one
   echo -n "$BACKUP_FILE" | aws s3 cp - "s3://$BACKUP_BUCKET/backups/latest"
 
