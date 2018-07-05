@@ -38,7 +38,7 @@ variable "domain_name" {
   type = "map"
 
   default = {
-    "stage" = "dataviz-nubis.allizom.org"
-    "prod"  = "dataviz-nubis.mozilla.org"
+    "stage" = "dataviz.allizom.org"
+    "prod"  = "dataviz.mozilla.org"
   }
 }
