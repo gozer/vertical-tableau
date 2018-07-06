@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 locals {
-  instance_type     = "${var.environment == "prod" ? "r4.2xlarge" : "m4.xlarge"}"
+  instance_type     = "${var.environment == "prod" ? "r4.4xlarge" : "m4.xlarge"}"
   root_storage_size = "256"
   worker_count      = "${var.environment == "prod" ? 0 : 0}"
 
