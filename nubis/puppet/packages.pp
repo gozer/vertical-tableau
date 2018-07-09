@@ -8,8 +8,8 @@ $tableau_installer_version = '10-5-0'
 package { 'vsql':
   ensure          => present,
   provider        => 'rpm',
-  name            => 'vertica-client-fips',
-  source          => "https://my.vertica.com/client_drivers/${vsql_major_version}.x/${vsql_version}/vertica-client-fips-${vsql_version}.${::architecture}.rpm",
+  name            => 'vertica-client',
+  source          => "https://my.vertica.com/client_drivers/${vsql_major_version}.x/${vsql_version}/vertica-client-${vsql_version}.${::architecture}.rpm",
   install_options => [
     '--noscripts',
   ],
