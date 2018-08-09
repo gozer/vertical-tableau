@@ -12,7 +12,7 @@ locals {
 }
 
 module "coordinator" {
-  source            = "github.com/nubisproject/nubis-terraform//worker?ref=v2.2.0"
+  source            = "github.com/nubisproject/nubis-terraform//worker?ref=v2.3.0"
   region            = "${var.region}"
   environment       = "${var.environment}"
   account           = "${var.account}"
@@ -36,7 +36,7 @@ module "coordinator" {
 }
 
 module "worker" {
-  source            = "github.com/nubisproject/nubis-terraform//worker?ref=v2.2.0"
+  source            = "github.com/nubisproject/nubis-terraform//worker?ref=v2.3.0"
   region            = "${var.region}"
   environment       = "${var.environment}"
   account           = "${var.account}"
@@ -65,7 +65,7 @@ module "worker" {
 }
 
 module "load_balancer" {
-  source       = "github.com/nubisproject/nubis-terraform//load_balancer?ref=v2.2.0"
+  source       = "github.com/nubisproject/nubis-terraform//load_balancer?ref=v2.3.0"
   region       = "${var.region}"
   environment  = "${var.environment}"
   account      = "${var.account}"
@@ -80,7 +80,7 @@ module "load_balancer" {
 }
 
 module "dns" {
-  source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.2.0"
+  source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.3.0"
   region       = "${var.region}"
   environment  = "${var.environment}"
   account      = "${var.account}"
@@ -89,7 +89,7 @@ module "dns" {
 }
 
 module "backups" {
-  source       = "github.com/nubisproject/nubis-terraform//bucket?ref=v2.2.0"
+  source       = "github.com/nubisproject/nubis-terraform//bucket?ref=v2.3.0"
   region       = "${var.region}"
   environment  = "${var.environment}"
   account      = "${var.account}"
@@ -100,7 +100,7 @@ module "backups" {
 }
 
 module "mail" {
-  source       = "github.com/nubisproject/nubis-terraform//mail?ref=v2.2.0"
+  source       = "github.com/nubisproject/nubis-terraform//mail?ref=v2.3.0"
   region       = "${var.region}"
   environment  = "${var.environment}"
   account      = "${var.account}"
@@ -108,7 +108,7 @@ module "mail" {
 }
 
 module "info" {
-  source      = "github.com/nubisproject/nubis-terraform//info?ref=v2.2.0"
+  source      = "github.com/nubisproject/nubis-terraform//info?ref=v2.3.0"
   region      = "${var.region}"
   environment = "${var.environment}"
   account     = "${var.account}"
