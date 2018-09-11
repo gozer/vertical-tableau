@@ -1,8 +1,8 @@
 $vsql_major_version = '8.1'
 $vsql_version = "${vsql_major_version}.1-13"
 
-$tableau_version = '2018-1-2'
-$tableau_installer_version = '10-5-0'
+$tableau_version = '2018-2-0'
+$tableau_installer_version = '2018-2'
 
 # Vertica SQL
 package { 'vsql':
