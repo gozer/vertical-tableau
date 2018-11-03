@@ -111,3 +111,6 @@ if [ "coordinator" == "$NUBIS_PURPOSE" ]; then
   # Restore from last known good backup
   /usr/local/bin/vertical-tableau-backup restore
 fi
+
+#Schedule a shutdown in a month
+echo shutdown -h | at now + 27 days
