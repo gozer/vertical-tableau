@@ -6,7 +6,7 @@ file { '/usr/share/fonts/tableau':
   group   => 'root',
   source  => 'puppet:///nubis/files/fonts',
 }
-  -> -> exec { 'Update font cache':
+-> exec { 'Update font cache':
   command => 'fc-cache -v /usr/share/fonts',
   path    => ['/bin','/sbin','/usr/bin','/usr/sbin','/usr/local/bin','/usr/local/sbin'],
 }
