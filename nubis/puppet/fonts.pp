@@ -5,7 +5,7 @@ file { '/usr/share/fonts/tableau':
   owner   => 'root',
   group   => 'root',
   require => [
-    Package['fonfconfig'],
+    Package['fontconfig'],
   ],
   source  => 'puppet:///nubis/files/fonts',
 }
