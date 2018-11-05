@@ -1,18 +1,12 @@
-package { 'fontconfig':
-  ensure => present
-}
--> file { '/usr/share/fonts':
-  ensure => directory,
-  mode   => '0755',
-  owner  => 'root',
-  group  => 'root',
-}
-->file { '/usr/share/fonts/tableau':
+file { '/usr/share/fonts/tableau':
   ensure  => directory,
   recurse => true,
   purge   => false,
   owner   => 'root',
   group   => 'root',
+  require => [
+    Package['fonfconfig'],
+  ],
   source  => 'puppet:///nubis/files/fonts',
 }
 -> exec { 'Update font cache':
