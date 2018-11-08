@@ -9,6 +9,8 @@ locals {
 
   # Sloooowwww bootup, give it 40 minutes
   health_check_grace_period = "${ 40 * 60 }"
+
+  psql_port = "8060"
 }
 
 module "coordinator" {
@@ -19,7 +21,7 @@ module "coordinator" {
   service_name      = "${var.service_name}"
   purpose           = "coordinator"
   ami               = "${var.ami}"
-  elb               = "${module.load_balancer.name}"
+  elb               = "${module.load_balancer.name},${module.load_balancer_psql.name}"
   ssh_key_file      = "${var.ssh_key_file}"
   ssh_key_name      = "${var.ssh_key_name}"
   nubis_sudo_groups = "${var.nubis_sudo_groups}"
@@ -79,6 +81,23 @@ module "load_balancer" {
   health_check_target = "HTTP:81/health.html"
 }
 
+module "load_balancer_psql" {
+  source       = "github.com/nubisproject/nubis-terraform//load_balancer?ref=v2.3.1"
+  region       = "${var.region}"
+  environment  = "${var.environment}"
+  account      = "${var.account}"
+  service_name = "${var.service_name}-psql"
+
+  no_ssl_cert        = "1"
+  backend_protocol   = "tcp"
+  protocol_http      = "tcp"
+  protocol_https     = "tcp"
+  backend_port_http  = "${local.psql_port}"
+  backend_port_https = "${local.psql_port}"
+
+  health_check_target = "TCP:${local.psql_port}"
+}
+
 module "dns" {
   source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.3.1"
   region       = "${var.region}"
@@ -86,6 +105,15 @@ module "dns" {
   account      = "${var.account}"
   service_name = "${var.service_name}"
   target       = "${module.load_balancer.address}"
+}
+
+module "dns_psql" {
+  source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.3.1"
+  region       = "${var.region}"
+  environment  = "${var.environment}"
+  account      = "${var.account}"
+  service_name = "${var.service_name}-psql"
+  target       = "${module.load_balancer_psql.address}"
 }
 
 module "backups" {
@@ -172,6 +200,18 @@ resource "aws_security_group" "tableau" {
     from_port = 27000
     to_port   = 27010
     protocol  = "tcp"
+  }
+
+  # Internal PostgreSQL database
+  ingress {
+    from_port = "${local.psql_port}"
+    to_port   = "${local.psql_port}"
+    protocol  = "tcp"
+    self      = true
+
+    security_groups = [
+      "${module.load_balancer_psql.source_security_group_id}",
+    ]
   }
 
   egress {
