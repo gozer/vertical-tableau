@@ -112,7 +112,8 @@ module "dns_psql" {
   region       = "${var.region}"
   environment  = "${var.environment}"
   account      = "${var.account}"
-  service_name = "${var.service_name}-psql"
+  service_name = "${var.service_name}"
+  prefix       = "psql"
   target       = "${module.load_balancer_psql.address}"
 }
 
