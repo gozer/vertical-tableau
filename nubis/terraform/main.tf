@@ -259,7 +259,7 @@ resource "aws_lb" "psql" {
 
 resource "aws_lb_target_group" "psql" {
   name     = "${var.service_name}-psql-${var.environment}"
-  port     = 5433
+  port     = "${local.psql_port}"
   protocol = "TCP"
   vpc_id   = "${module.info.vpc_id}"
 
