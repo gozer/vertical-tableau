@@ -21,7 +21,7 @@ module "coordinator" {
   service_name      = "${var.service_name}"
   purpose           = "coordinator"
   ami               = "${var.ami}"
-  elb               = "${module.load_balancer.name},${module.load_balancer_psql.name}"
+  elb               = "${module.load_balancer.name}"
   ssh_key_file      = "${var.ssh_key_file}"
   ssh_key_name      = "${var.ssh_key_name}"
   nubis_sudo_groups = "${var.nubis_sudo_groups}"
@@ -81,23 +81,6 @@ module "load_balancer" {
   health_check_target = "HTTP:81/health.html"
 }
 
-module "load_balancer_psql" {
-  source       = "github.com/nubisproject/nubis-terraform//load_balancer?ref=v2.3.1"
-  region       = "${var.region}"
-  environment  = "${var.environment}"
-  account      = "${var.account}"
-  service_name = "${var.service_name}-psql"
-
-  no_ssl_cert        = "1"
-  backend_protocol   = "tcp"
-  protocol_http      = "tcp"
-  protocol_https     = "tcp"
-  backend_port_http  = "${local.psql_port}"
-  backend_port_https = "${local.psql_port}"
-
-  health_check_target = "TCP:${local.psql_port}"
-}
-
 module "dns" {
   source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.3.1"
   region       = "${var.region}"
@@ -105,16 +88,6 @@ module "dns" {
   account      = "${var.account}"
   service_name = "${var.service_name}"
   target       = "${module.load_balancer.address}"
-}
-
-module "dns_psql" {
-  source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.3.1"
-  region       = "${var.region}"
-  environment  = "${var.environment}"
-  account      = "${var.account}"
-  service_name = "${var.service_name}"
-  prefix       = "psql"
-  target       = "${module.load_balancer_psql.address}"
 }
 
 module "backups" {
@@ -210,8 +183,8 @@ resource "aws_security_group" "tableau" {
     protocol  = "tcp"
     self      = true
 
-    security_groups = [
-      "${module.load_balancer_psql.source_security_group_id}",
+    cidr_blocks = [
+      "${concat(var.psql_whitelist, formatlist("%s/32",flatten(data.aws_network_interface.psql.*.private_ips)))}",
     ]
   }
 
@@ -253,4 +226,97 @@ data "aws_iam_policy_document" "backups_files" {
       "${module.backups.arn}/*",
     ]
   }
+}
+
+resource "aws_lb" "psql" {
+  name                             = "${var.service_name}-psql-${var.environment}"
+  internal                         = false
+  load_balancer_type               = "network"
+  enable_cross_zone_load_balancing = true
+
+  #XXX: Turn into a dynamic
+  subnet_mapping {
+    subnet_id     = "${element(split(",",module.info.public_subnets),0)}"
+    allocation_id = "${element(aws_eip.psql.*.id, 0)}"
+  }
+
+  subnet_mapping {
+    subnet_id     = "${element(split(",",module.info.public_subnets),1)}"
+    allocation_id = "${element(aws_eip.psql.*.id, 1)}"
+  }
+
+  subnet_mapping {
+    subnet_id     = "${element(split(",",module.info.public_subnets),2)}"
+    allocation_id = "${element(aws_eip.psql.*.id, 2)}"
+  }
+
+  tags = {
+    Name        = "${var.service_name}-psql-${var.environment}"
+    Region      = "${var.region}"
+    Environment = "${var.environment}"
+  }
+}
+
+resource "aws_lb_target_group" "psql" {
+  name     = "${var.service_name}-psql-${var.environment}"
+  port     = 5433
+  protocol = "TCP"
+  vpc_id   = "${module.info.vpc_id}"
+
+  tags = {
+    Name        = "${var.service_name}-psql-${var.environment}"
+    Region      = "${var.region}"
+    Environment = "${var.environment}"
+  }
+}
+
+resource "aws_autoscaling_attachment" "worker" {
+  autoscaling_group_name = "${module.worker.autoscaling_group}"
+  alb_target_group_arn   = "${aws_lb_target_group.psql.arn}"
+}
+
+resource "aws_lb_listener" "public" {
+  load_balancer_arn = "${aws_lb.psql.arn}"
+  port              = "${local.psql_port}"
+  protocol          = "TCP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = "${aws_lb_target_group.psql.arn}"
+  }
+}
+
+data "aws_network_interface" "psql" {
+  count = "${length(split(",",module.info.public_subnets))}"
+
+  filter = {
+    name   = "description"
+    values = ["ELB ${aws_lb.psql.arn_suffix}"]
+  }
+
+  filter = {
+    name   = "subnet-id"
+    values = ["${element(split(",",module.info.public_subnets), count.index)}"]
+  }
+}
+
+resource "aws_eip" "psql" {
+  count = "${length(split(",",module.info.public_subnets))}"
+  vpc   = true
+
+  tags = {
+    Name        = "${var.service_name}-psql-${var.environment}-az${count.index}"
+    Region      = "${var.region}"
+    Environment = "${var.environment}"
+  }
+}
+
+module "dns_psql" {
+  source       = "github.com/nubisproject/nubis-terraform//dns?ref=v2.3.1"
+  region       = "${var.region}"
+  environment  = "${var.environment}"
+  account      = "${var.account}"
+  service_name = "${var.service_name}"
+  prefix       = "psql"
+  target       = "${aws_lb.psql.dns_name}"
 }
