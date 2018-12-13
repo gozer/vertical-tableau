@@ -270,8 +270,8 @@ resource "aws_lb_target_group" "psql" {
   }
 }
 
-resource "aws_autoscaling_attachment" "worker" {
-  autoscaling_group_name = "${module.worker.autoscaling_group}"
+resource "aws_autoscaling_attachment" "coordinator" {
+  autoscaling_group_name = "${module.coordinator.autoscaling_group}"
   alb_target_group_arn   = "${aws_lb_target_group.psql.arn}"
 }
 
