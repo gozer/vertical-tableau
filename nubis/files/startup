@@ -101,6 +101,15 @@ if [ "coordinator" == "$NUBIS_PURPOSE" ]; then
   consul kv put "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Username" "$USERNAME"
   consul kv put "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/Password" "$PASSWORD"
 
+  echo "Enabling data repository access"
+  consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/RepositoryPassword"
+
+  REPO_PASSWORD=$(consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/RepositoryPassword" 2>/dev/null || echo "nubis")
+
+  for account in tableau readonly; do
+    $TSM data-access repository-access enable --repository-username "$account" --repository-password "$REPO_PASSWORD"
+  done
+
   backoff=4
   until $TSM status -v; do
     echo "Waiting $backoff seconds for TSM startup to complete"
