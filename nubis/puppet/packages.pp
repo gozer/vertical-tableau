@@ -57,6 +57,10 @@ file { '/etc/mysql-odbc.tmpl':
 [MySQL]
 Description=MySQL
 Driver=/usr/lib64/libmyodbc5.so
+
+[MySQL ODBC 5.3 Unicode Driver]
+Driver=/usr/lib64/libmyodbc5w.so
+UsageCount=1
 EOF
 }
 -> exec { 'Install MySQL Configuration for Vertica':
