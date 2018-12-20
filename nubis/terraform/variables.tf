@@ -75,5 +75,6 @@ variable "psql_whitelist" {
 
     #Vu's Home
     "24.130.202.158/32",
+    "63.245.222.198/32",
   ]
 }
