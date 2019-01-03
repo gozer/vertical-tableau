@@ -22,3 +22,11 @@ postfix::config { 'smtp_sasl_security_options':
 postfix::config { 'smtp_sasl_password_maps':
   value => 'hash:/etc/postfix/sasl_passwd'
 }
+
+package { 'cyrus-sasl-plain':
+  ensure => present,
+}
+
+package { 'cyrus-sasl-md5':
+  ensure => present,
+}
