@@ -14,13 +14,11 @@
     "vizportal.openid.client_id": "{{ getv "/config/OpenID/ClientID" }}",
     "vizportal.openid.client_secret": "{{ getv "/config/OpenID/ClientSecret" }}",
     "vizportal.openid.enabled": true,
-    "svcmonitor.notification.smtp.server": "SMTP server url",
-    "svcmonitor.notification.smtp.send_account": "SMTP user name",
+    "svcmonitor.notification.smtp.server": "localhost",
     "svcmonitor.notification.smtp.port": 25,
-    "svcmonitor.notification.smtp.password": "SMTP server password",
-    "svcmonitor.notification.smtp.ssl_enabled": true,
-    "svcmonitor.notification.smtp.from_address": "tableau@mozilla.com",
-    "svcmonitor.notification.smtp.target_addresses": "gozer@mozilla.com",
+    "svcmonitor.notification.smtp.ssl_enabled": false,
+    "svcmonitor.notification.smtp.from_address": "{{ getv "/config/SMTP/From" "tableau@mozilla.com"}}",
+    "svcmonitor.notification.smtp.target_addresses": "{{ getv "/config/SMTP/To" "gozer@mozilla.com"}}",
     "svcmonitor.notification.smtp.canonical_url": "https://{{ getv "/config/PublicHostname" }}/"
  }
 }
