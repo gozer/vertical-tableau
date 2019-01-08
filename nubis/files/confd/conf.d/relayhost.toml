@@ -1,0 +1,14 @@
+[template]
+src = "relayhost.tmpl"
+dest = "/var/run/relayhost.pp"
+prefix = "/%%STACK%%/%%ENVIRONMENT%%"
+
+uid = 0
+gid = 0
+mode = "0600"
+
+keys = [
+    "/config"
+]
+
+reload_cmd = "puppet apply /var/run/relayhost.pp"
