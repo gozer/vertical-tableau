@@ -30,7 +30,6 @@ module "coordinator" {
   security_group        = "${data.consul_keys.vertical.var.client_security_group_id},${aws_security_group.tableau.id}"
   security_group_custom = true
 
-  health_check_type         = "EC2"
   health_check_grace_period = "${local.health_check_grace_period}"
 
   instance_type     = "${local.instance_type}"
@@ -54,7 +53,6 @@ module "worker" {
   security_group        = "${data.consul_keys.vertical.var.client_security_group_id},${aws_security_group.tableau.id}"
   security_group_custom = true
 
-  health_check_type         = "EC2"
   health_check_grace_period = "${local.health_check_grace_period}"
   min_instances             = "${local.worker_count}"
 
