@@ -47,7 +47,7 @@ FileETag None
         comment      => 'Maintenance In Progress',
         rewrite_cond => [
             '%{ENV:REDIRECT_STATUS} !=503',
-            '/opt/tableau/.maintenance -f',
+            '/var/www/html/maintenance.html -f',
         ],
         rewrite_rule => ['^(.*)$ /$1 [R=503,L]'],
       },
@@ -83,6 +83,17 @@ file { '/var/www/html/outage.html':
 }
 
 file { '/var/www/html/health.html':
+  ensure  => file,
+  owner   => root,
+  group   => root,
+  mode    => '0644',
+  require => [
+    Class['Apache'],
+  ],
+  source  => 'puppet:///nubis/files/outage.html',
+}
+
+file { '/var/www/html/maintenance.html':
   ensure  => file,
   owner   => root,
   group   => root,
