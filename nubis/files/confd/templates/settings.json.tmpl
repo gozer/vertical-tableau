@@ -14,11 +14,20 @@
     "vizportal.openid.client_id": "{{ getv "/config/OpenID/ClientID" }}",
     "vizportal.openid.client_secret": "{{ getv "/config/OpenID/ClientSecret" }}",
     "vizportal.openid.enabled": true,
+    "backgrounder.send_email_on_refresh_failure": true,
+    "subscriptions.enabled": true,
+    "svcmonitor.notification.smtp.enabled": true,
+    "features.DesktopReporting": true,
+    "storage.monitoring.email_enabled": true,
+    "storage.monitoring.warning_percent": 20,
+    "storage.monitoring.critical_percent": 15,
+    "storage.monitoring.email_interval_min": 25,
+    "storage.monitoring.record_history_enabled": true,
     "svcmonitor.notification.smtp.server": "localhost",
     "svcmonitor.notification.smtp.port": 25,
     "svcmonitor.notification.smtp.ssl_enabled": false,
-    "svcmonitor.notification.smtp.from_address": "{{ getv "/config/SMTP/From" "tableau@mozilla.com"}}",
-    "svcmonitor.notification.smtp.target_addresses": "{{ getv "/config/SMTP/To" "gozer@mozilla.com"}}",
+    "svcmonitor.notification.smtp.from_address": "{{ getv "/config/SMTP/From" "data-services@mozilla.com"}}",
+    "svcmonitor.notification.smtp.target_addresses": "{{ getv "/config/SMTP/To" "data-services@mozilla.com"}}",
     "svcmonitor.notification.smtp.canonical_url": "https://{{ getv "/config/PublicHostname" }}/"
  }
 }
