@@ -18,6 +18,7 @@ NUBIS_ENVIRONMENT=$(nubis-metadata NUBIS_ENVIRONMENT)
 BACKUP_BUCKET=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/S3/Bucket/Backups" )
 BACKUP_DIR=/var/opt/tableau/tableau_server/data/tabsvc/files/backups
 RESTORE_MARKER=/opt/tableau/.restored
+MAINTENANCE_MARKER=/opt/tableau/.maintenance
 
 FILES_DIR=/var/lib/tableau/files
 
@@ -26,6 +27,7 @@ TSM_PASSWORD=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONM
 
 cleanup () {
  rm -rfv "${BACKUP_DIR:?}/"* 2>/dev/null
+ rm -fv "$MAINTENANCE_MARKER"
 }
 
 # Ensure we clean on exit
@@ -64,6 +66,11 @@ if [ "$ACTION" == "save" ]; then
 
 elif [ "$ACTION" == "restore" ]; then
   echo "Restoring from S3"
+
+  if [ ! -f "$RESTORE_MARKER" ]; then
+    # Initial restore, put ourselves in maintenance mode
+    touch $MAINTENANCE_MARKER
+  fi
 
   # Grab the latest backup name
   BACKUP_FILE=$(aws s3 cp "s3://$BACKUP_BUCKET/backups/latest" - )

@@ -42,9 +42,16 @@ FileETag None
         comment      => 'HTTPS redirect',
         rewrite_cond => ['%{HTTP:X-Forwarded-Proto} =http'],
         rewrite_rule => ['. https://%{HTTP:Host}%{REQUEST_URI} [L,R=permanent]'],
-      }
+      },
+      {
+        comment      => 'Maintenance In Progress',
+        rewrite_cond => [
+            '%{ENV:REDIRECT_STATUS} !=503',
+            '/opt/tableau/.maintenance -f',
+        ],
+        rewrite_rule => ['^(.*)$ /$1 [R=503,L]'],
+      },
     ],
-
     error_documents     => [
       {
         'error_code' => '503',
