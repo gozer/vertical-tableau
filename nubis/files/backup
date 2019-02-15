@@ -17,6 +17,7 @@ NUBIS_ENVIRONMENT=$(nubis-metadata NUBIS_ENVIRONMENT)
 
 BACKUP_BUCKET=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/S3/Bucket/Backups" )
 BACKUP_DIR=/var/opt/tableau/tableau_server/data/tabsvc/files/backups
+BACKUP_STAGING_DIR=/tmp/tableau-backups
 RESTORE_MARKER=/opt/tableau/.restored
 MAINTENANCE_MARKER=/var/www/html/maintenance.html
 
@@ -27,6 +28,7 @@ TSM_PASSWORD=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONM
 
 cleanup () {
  rm -rfv "${BACKUP_DIR:?}/"* 2>/dev/null
+ rm -rfv "${BACKUP_STAGING_DIR:?}/"* 2>/dev/null
 
  if [ "$ACTION" == "restore" ]; then
     rm -f "$MAINTENANCE_MARKER"
@@ -50,7 +52,7 @@ download_backup () {
   last_backup_filename
 
   # Grab the latest backup
-  aws s3 sync "s3://$BACKUP_BUCKET/backups/" "$BACKUP_DIR/" --exclude='*' --include="$BACKUP_FILE"
+  aws s3 sync "s3://$BACKUP_BUCKET/backups/" "$BACKUP_STAGING_DIR/" --exclude='*' --include="$BACKUP_FILE"
 }
 
 tsm_init () {
@@ -112,6 +114,9 @@ elif [ "$ACTION" == "restore" ]; then
 
   # Restore plain files
   aws s3 sync --delete "s3://$BACKUP_BUCKET/backups/files/" "$FILES_DIR"
+
+  # Stage the backup in the right place
+  mv "$BACKUP_STAGING_DIR/$BACKUP_FILE" "$BACKUP_DIR/$BACKUP_FILE"
 
   # Actually restore
   time tsm maintenance restore --restart-server --file "$BACKUP_FILE"
