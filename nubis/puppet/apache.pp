@@ -46,6 +46,7 @@ FileETag None
       {
         comment      => 'Maintenance In Progress',
         rewrite_cond => [
+            '%{REQUEST_URI} !^/health.html',
             '%{ENV:REDIRECT_STATUS} !=503',
             '/var/www/html/maintenance.html -f',
         ],
