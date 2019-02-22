@@ -132,5 +132,7 @@ fi
 PUBLIC_HOSTNAME=$(consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/PublicHostname" 2>/dev/null)
 echo "127.0.0.1	psql.$PUBLIC_HOSTNAME" >> /etc/hosts
 
-#Schedule a shutdown in a month
-echo shutdown -h | at now + 27 days
+if [ "$NUBIS_ENVIRONMENT" != "prod" ]; then
+  #Schedule a shutdown in a month
+  echo shutdown -h | at now + 27 days
+fi
