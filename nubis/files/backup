@@ -17,6 +17,7 @@ NUBIS_ENVIRONMENT=$(nubis-metadata NUBIS_ENVIRONMENT)
 
 BACKUP_BUCKET=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/S3/Bucket/Backups" )
 BACKUP_DIR=/var/opt/tableau/tableau_server/data/tabsvc/files/backups
+BACKUP_STAGING_DIR=/tmp/tableau-backups
 RESTORE_MARKER=/opt/tableau/.restored
 MAINTENANCE_MARKER=/var/www/html/maintenance.html
 
@@ -27,28 +28,53 @@ TSM_PASSWORD=$( consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONM
 
 cleanup () {
  rm -rfv "${BACKUP_DIR:?}/"* 2>/dev/null
+ rm -rfv "${BACKUP_STAGING_DIR:?}/"* 2>/dev/null
 
  if [ "$ACTION" == "restore" ]; then
     rm -f "$MAINTENANCE_MARKER"
  fi
 }
 
-# Ensure we clean on exit
-trap cleanup EXIT
+last_backup_filename () {
+  # Grab the latest backup name
+  BACKUP_FILE=$(aws s3 cp "s3://$BACKUP_BUCKET/backups/latest" - )
 
-# And cleanup old backups *now*
-cleanup
+  if [ -z "$BACKUP_FILE" ]; then
+    echo "Coulnd't find an existing backup in s3://$BACKUP_BUCKET/backups"
+    exit 1
+  fi
+}
 
-# Login so we can perform administrative tasks
-tsm login --username "${TSM_USERNAME:-tableauops}" --password "${TSM_PASSWORD:-foobar123}"
+download_backup () {
+  echo "Downloading last backup from S3"
 
-# Check that all is well
-tsm status -v
+  # Grab the latest backup name
+  last_backup_filename
+
+  # Grab the latest backup
+  aws s3 sync "s3://$BACKUP_BUCKET/backups/" "$BACKUP_STAGING_DIR/" --exclude='*' --include="$BACKUP_FILE"
+}
+
+tsm_init () {
+  # Login so we can perform administrative tasks
+  tsm login --username "${TSM_USERNAME:-tableauops}" --password "${TSM_PASSWORD:-foobar123}"
+
+  # Check that all is well
+  tsm status -v
+}
 
 ACTION=$1
 
 if [ "$ACTION" == "save" ]; then
   echo "Backing up to S3"
+
+  # cleanup old backups *now*
+  cleanup
+
+  # Ensure we clean on exit
+  trap cleanup EXIT
+
+  tsm_init
 
   if [ ! -f "$RESTORE_MARKER" ]; then
     echo "Initial restore hasn't completed, skipping backup"
@@ -67,27 +93,30 @@ if [ "$ACTION" == "save" ]; then
   # Record this backup at the latest one
   echo -n "$BACKUP_FILE" | aws s3 cp - "s3://$BACKUP_BUCKET/backups/latest"
 
+elif [ "$ACTION" == "download" ]; then
+  download_backup
+
 elif [ "$ACTION" == "restore" ]; then
   echo "Restoring from S3"
+
+  tsm_init
+
+  # Ensure we clean on exit
+  trap cleanup EXIT
 
   if [ ! -f "$RESTORE_MARKER" ]; then
     # Initial restore, put ourselves in maintenance mode
     touch $MAINTENANCE_MARKER
   fi
 
-  # Grab the latest backup name
-  BACKUP_FILE=$(aws s3 cp "s3://$BACKUP_BUCKET/backups/latest" - )
-
-  if [ -z "$BACKUP_FILE" ]; then
-    echo "Coulnd't find an existing backup in s3://$BACKUP_BUCKET/backups"
-    exit 1
-  fi
-
   # Grab the latest backup
-  aws s3 cp "s3://$BACKUP_BUCKET/backups/$BACKUP_FILE" "$BACKUP_DIR/$BACKUP_FILE"
+  download_backup
 
   # Restore plain files
   aws s3 sync --delete "s3://$BACKUP_BUCKET/backups/files/" "$FILES_DIR"
+
+  # Stage the backup in the right place
+  mv "$BACKUP_STAGING_DIR/$BACKUP_FILE" "$BACKUP_DIR/$BACKUP_FILE"
 
   # Actually restore
   time tsm maintenance restore --restart-server --file "$BACKUP_FILE"

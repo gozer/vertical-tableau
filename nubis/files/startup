@@ -83,6 +83,10 @@ until [ -r $CONFIG ]; do
   sleep 5
 done
 
+# Start our backup download job early
+/usr/local/bin/vertical-tableau-backup download &
+BACKUP_DOWNLOAD_PID=$!
+
 cd /opt && LANG=en_US.UTF-8 USER=root SUDO_USER=root $INSTALLER -a $USERNAME "${LICENSE_ARGS[@]}" "${BOOTSTRAP_ARGS[@]}" "${INSTALLER_ARGS[@]}" --accepteula tableau-server-*.rpm
 
 #https://onlinehelp.tableau.com/current/server-linux/en-us/ports_license_daemon.htm
@@ -108,6 +112,9 @@ if [ "coordinator" == "$NUBIS_PURPOSE" ]; then
     backoff=$(( backoff * 15 / 10 ))
   done
 
+  # Make sure we're done downloading our backup
+  wait $BACKUP_DOWNLOAD_PID
+
   # Restore from last known good backup
   /usr/local/bin/vertical-tableau-backup restore
 
@@ -125,5 +132,7 @@ fi
 PUBLIC_HOSTNAME=$(consul kv get "$NUBIS_PROJECT-$NUBIS_ENVIRONMENT/$NUBIS_ENVIRONMENT/config/PublicHostname" 2>/dev/null)
 echo "127.0.0.1	psql.$PUBLIC_HOSTNAME" >> /etc/hosts
 
-#Schedule a shutdown in a month
-echo shutdown -h | at now + 27 days
+if [ "$NUBIS_ENVIRONMENT" != "prod" ]; then
+  #Schedule a shutdown in a month
+  echo shutdown -h | at now + 27 days
+fi
