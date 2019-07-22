@@ -4,14 +4,26 @@ $vsql_version = "${vsql_major_version}.1-13"
 $tableau_version = '2019-2-1'
 $tableau_installer_version = '2018-2'
 
+file { "/tmp/vertica.rpm":
+  source          => "puppet:///nubis/files/rpms/vertica-client-${vsql_version}.${::architecture}.rpm",
+  owner   => root,
+  group   => root,
+  mode    => '0644'
+}
+
 # Vertica SQL
 package { 'vsql':
   ensure          => present,
   provider        => 'rpm',
   name            => 'vertica-client',
-  source          => "https://my.vertica.com/client_drivers/${vsql_major_version}.x/${vsql_version}/vertica-client-${vsql_version}.${::architecture}.rpm",
+  source          => "/tmp/vertica.rpm",
+  # Download site is broken atm
+  # source          => "https://my.vertica.com/client_drivers/${vsql_major_version}.x/${vsql_version}/vertica-client-${vsql_version}.${::architecture}.rpm",
   install_options => [
     '--noscripts',
+  ],
+  require => [
+    File['/tmp/vertica.rpm'],
   ],
 }
 
