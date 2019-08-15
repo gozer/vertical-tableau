@@ -131,3 +131,7 @@ package { 'pwgen':
 package { 'moreutils':
   ensure => present,
 }
+
+python::pip { 'awscli':
+  ensure  => 'latest',
+}
