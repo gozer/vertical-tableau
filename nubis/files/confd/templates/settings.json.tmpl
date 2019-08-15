@@ -28,6 +28,9 @@
     "svcmonitor.notification.smtp.ssl_enabled": false,
     "svcmonitor.notification.smtp.from_address": "{{ getv "/config/SMTP/From" "data-services@mozilla.com"}}",
     "svcmonitor.notification.smtp.target_addresses": "{{ getv "/config/SMTP/To" "data-services@mozilla.com"}}",
-    "svcmonitor.notification.smtp.canonical_url": "https://{{ getv "/config/PublicHostname" }}/"
+    "svcmonitor.notification.smtp.canonical_url": "https://{{ getv "/config/PublicHostname" }}/",
+    "oauth.google.client_id" : "{{ getv "/config/Google/ClientID" ""}}",
+    "oauth.google.client_secret" : "{{ getv "/config/Google/ClientSecret" ""}}",
+    "oauth.google.redirect_uri" : "https://{{ getv "/config/PublicHostname" }}/auth/add_oauth_token"
  }
 }
